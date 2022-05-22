@@ -1,5 +1,5 @@
 build:
-	nasm boot.asm -f bin -o boot.bin
+	nasm boot.asm -f bin -o bin/boot.bin
 
 run: build
-	qemu-system-x86_64 boot.bin
+	qemu-system-x86_64 bin/boot.bin
