@@ -35,35 +35,11 @@ debug_hex:
         pop bx
         ret
 
-;; debug_hex2:
-;;     mov dx, si
-;;     and dx, 0x000F
-;;     add dx, 0x30
-;;     mov byte [hex + 5], dl
-
-;;     mov dx, si
-;;     and dx, 0x00F0
-;;     shr dx, 4
-;;     add dx, 0x30
-;;     mov byte [hex + 4], dl
-
-;;     mov dx, si
-;;     and dx, 0x0F00
-;;     shr dx, 8
-;;     add dx, 0x30
-;;     mov byte [hex + 3], dl
-
-;;     mov dx, si
-;;     and dx, 0xF000
-;;     shr dx, 12
-;;     add dx, 0x30
-;;     mov byte [hex + 2], dl
-
-;;     mov si, hex
-;;     call print_string
-;;     ret
-
 print_string:
+    push ax
+    ;; Bios scrolling teletype
+    mov ah, 0x0E
+
     .loop:
         ;; mov al, [si]
         ;; inc si
@@ -78,6 +54,7 @@ print_string:
         ret
 
     .end_loop:
+        pop ax
         ret
 
 HEX_TEMP: db "0x???? ",0

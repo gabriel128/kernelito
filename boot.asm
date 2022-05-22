@@ -1,18 +1,27 @@
-ORG 0x7c00
+ORG 0
 BITS 16
-;; Bios scrolling teletype
-mov ah, 0x0E
 
-;; Setup stack
-mov ebp, 0x8000
-mov esp, ebp
+jmp 0x7c0:setup
 
-mov si, hello
-call print_string
+setup:
+    cli                         ; Clear Interrupts
+    mov ax, 0x7c0
+    mov ds, ax
+    mov es, ax
+    mov ax, 0x0
+    mov ss, ax
+    ;; Setup stack
+    mov ebp, 0x8000
+    mov esp, ebp
+    sti                         ; Enble interrupts back
 
-mov si, 0xFFF2
-call debug_hex
-jmp end_prog
+start:
+    mov si, hello
+    call print_string
+
+    mov si, 0xFFF2
+    call debug_hex
+    jmp end_prog
 
 %include "utils/debug_print.asm"
 
