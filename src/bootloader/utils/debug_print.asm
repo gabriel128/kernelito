@@ -1,4 +1,10 @@
-debug_hex:
+
+;; REAL MODE address debuger
+;;
+;; usage:
+;;   mov si, 0xFFF2
+;;   call debug_hex
+rm_debug_hex:
     push bx
 
     mov bx, 0x05            ; bx = 5
@@ -31,11 +37,11 @@ debug_hex:
 
     .end_loop:
         mov si, HEX_TEMP
-        call print_string
+        call rm_print_string
         pop bx
         ret
 
-print_string:
+rm_print_string:
     push ax
     ;; Bios scrolling teletype
     mov ah, 0x0E
