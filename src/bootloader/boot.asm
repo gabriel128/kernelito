@@ -1,8 +1,6 @@
 [ORG 0x7c00]
 BITS 16
 
-stack:
-
 KERNEL_OFFSET equ 0x9000
 ;; Just in case dl gets overriden
 
