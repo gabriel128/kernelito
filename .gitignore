@@ -1,2 +1,4 @@
 bin/*
 .gdb_history
+src/c_kernel/.ccls-cache
+*.o
