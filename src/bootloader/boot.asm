@@ -1,7 +1,8 @@
 [ORG 0x7c00]
 BITS 16
 
-KERNEL_OFFSET equ 0x9000
+KERNEL_OFFSET equ 0x0100000
+;; KERNEL_OFFSET equ 0x9000
 ;; Just in case dl gets overriden
 
 setup_real_mode:
@@ -19,13 +20,12 @@ start_real_mode:
     mov si, REAL_MODE_START_MSG
     call rm_print_string
 
-    ;; Load kernel
-    mov al, 125                 ; Loads 64KB to not break the DMA boundaries
-    mov cl, 2                   ; Start reading from the second sector
-    mov bx, KERNEL_OFFSET
-    mov dl, [BOOT_DRIVE]
-
-    call load_kernel
+    ;; Load kernel in real mode
+    ;; mov al, 125                 ; Loads 64KB to not break the DMA boundaries
+    ;; mov cl, 2                   ; Start reading from the second sector
+    ;; mov bx, KERNEL_OFFSET
+    ;; mov dl, [BOOT_DRIVE]
+    ;; call load_kernel
 
     ;; mov si, KERNEL_OFFSET
     ;; call rm_print_string
@@ -40,19 +40,28 @@ start_real_mode:
 
 imports_real_mode:
     %include "src/bootloader/utils/debug_print.asm"
-    %include "src/bootloader/utils/disk.asm"
+    ;; %include "src/bootloader/utils/disk.asm"
     %include "src/bootloader/switch_pmode.asm"
 
 [BITS 32]
 
 after_pmode_switch:
-    jmp CODE_SEG:KERNEL_OFFSET
-    jmp end_prog
+    mov eax, 1
+    mov ecx, 200
+    mov edi, KERNEL_OFFSET
+    call ata_lba_read
 
-end_prog:
-   jmp $
-   nop
-   nop
+    ;;  Debug
+    ;; mov ebx, 0xB8010
+    ;; mov eax, [MSG]
+    ;; mov [ebx], eax
+
+    jmp CODE_SEG:KERNEL_OFFSET
+    ;; shouldn't reach here
+    jmp $
+
+imports_pmode:
+    %include "src/bootloader/utils/disk32.asm"
 
 [BITS 16]
 
@@ -60,7 +69,7 @@ end_prog:
 BOOT_DRIVE db 0
 REAL_MODE_START_MSG:  db 10, "> Starting real mode (iow things are getting real). ", 0
 PROTECTED_MODE_START_MSG: db "> Starting protected mode. ", 0
-
+MSG:    db "4", 4
 
 ;; Set magic number
 times 510-($-$$) db 0
