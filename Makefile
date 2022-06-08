@@ -3,10 +3,9 @@ all: build run
 build: clean
 	nasm -g bootloader/boot.asm -f bin -o bin/boot.bin
 
-	cargo build --release
-	cp target/i686/release/libkernelito.a build/libkernelito.a
-	i686-elf-ld -n -gc-section -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
-	# i686-elf-gcc -o ./bin/kernel.bin -Tlinker.ld -O0 -nostdlib -ffreestanding build/libkernelito.a
+	cargo build
+	cp target/i686/debug/libkernelito.a build/libkernelito.a
+	i686-elf-ld -n -gc-sections -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
 
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img

@@ -13,7 +13,7 @@ fn panic(_info: &PanicInfo) -> ! {
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     print(
-        b"Hello there my dear friend",
+        b"Hello there my dear friend, trying some stuff over here",
         Some(&mut 1),
         &mut 2,
         &mut 4,
