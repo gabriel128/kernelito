@@ -47,14 +47,24 @@ imports_real_mode:
 
 after_pmode_switch:
     mov eax, 1
-    mov ecx, 200
+    mov ecx, 255
     mov edi, KERNEL_OFFSET
     call ata_lba_read
 
+    ;; add eax, 200
+    ;; add ebx, 200
+    ;; mov ecx, 200
+
+    ;; mov edi, ebx
+    ;; call ata_lba_read
+
     ;;  Debug
-    ;; mov ebx, 0xB8010
-    ;; mov eax, [MSG]
-    ;; mov [ebx], eax
+
+    mov ebx, 0xB8100
+    mov eax, [MSG]
+    push eax
+    pop ecx
+    mov [ebx], ecx
 
     jmp CODE_SEG:KERNEL_OFFSET
     ;; shouldn't reach here

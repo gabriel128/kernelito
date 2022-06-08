@@ -31,9 +31,9 @@ SECTIONS
     }
 
     /* /DISCARD/ : { */
-    /*    *(.comment) */
+    /*    *(.comment)     */
     /*    *(.eh_frame) */
-    /*    *(.eh_frame_hdr) */
+    /*    *(.eh_frame) */
     /*    *(.rel.eh_frame) */
     /* } */
 }

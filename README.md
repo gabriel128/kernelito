@@ -6,6 +6,6 @@ WIP kernel (most likely a micro kernel)
 
 ```
 (gdb)
-target remote | qemu-system-x86_64 -hda ./bin/boot.bin -S -gdb stdio
+target remote | qemu-system-x86_64 -hda ./bin/kernel.img -S -gdb stdio
 ```
 
