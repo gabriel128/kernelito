@@ -1,7 +1,7 @@
 ;;; Switchs to protected mode.
 ;;;
 ;;; Expects a label `after_pmode_switch` as a continuation
-%include "src/bootloader/gdt.asm"
+%include "bootloader/gdt.asm"
 
 switch_pmode:
     cli

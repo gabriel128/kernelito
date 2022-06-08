@@ -39,9 +39,9 @@ start_real_mode:
     jmp $
 
 imports_real_mode:
-    %include "src/bootloader/utils/debug_print.asm"
+    %include "bootloader/utils/debug_print.asm"
     ;; %include "src/bootloader/utils/disk.asm"
-    %include "src/bootloader/switch_pmode.asm"
+    %include "bootloader/switch_pmode.asm"
 
 [BITS 32]
 
@@ -71,7 +71,7 @@ after_pmode_switch:
     jmp $
 
 imports_pmode:
-    %include "src/bootloader/utils/disk32.asm"
+    %include "bootloader/utils/disk32.asm"
 
 [BITS 16]
 

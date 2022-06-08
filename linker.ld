@@ -1,31 +1,37 @@
+/* OUTPUT_FORMAT(binary) */
+OUTPUT_FORMAT(elf32-i386)
+__max_stack_size = 0x200;
+
 ENTRY(_start)
-OUTPUT_FORMAT(binary)
-/* OUTPUT_FORMAT(elf32-i386) */
 SECTIONS
 {
+    /* .boot 0x7c00 : { */
+    /*     *(.boot.*); */
+    /* } */
+
     . = 1M;
-    .text : ALIGN(4096)
+    .text : ALIGN(4K)
     {
         *(.text)
     }
 
-    .rodata : ALIGN(4096)
+    .rodata : ALIGN(4K)
     {
         *(.rodata)
     }
 
-    .data : ALIGN(4096)
+    .data : ALIGN(4K)
     {
         *(.data)
     }
 
-    .bss : ALIGN(4096)
+    .bss : ALIGN(4K)
     {
         *(COMMON)
         *(.bss)
     }
 
-    .asm : ALIGN(4096)
+    .asm : ALIGN(4K)
     {
         *(.asm)
     }

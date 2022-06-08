@@ -19,6 +19,11 @@ pub fn print(
     // *a5 += 1;
     let vga_buffer = VGA_MEMORY as *mut u8;
 
+    // unsafe {
+    //     *vga_buffer.offset(0 as isize) = *text.get(0).unwrap();
+    //     *vga_buffer.offset(1 as isize) = 0xb;
+    // }
+
     for (i, &byte) in text.iter().enumerate() {
         unsafe {
             *vga_buffer.offset(i as isize * 2) = byte;
@@ -26,8 +31,8 @@ pub fn print(
         }
     }
 
-    unsafe {
-        *vga_buffer.offset(2 as isize) = *text.get(0).unwrap();
-        *vga_buffer.offset(3 as isize) = 0xb;
-    }
+    // unsafe {
+    //     *vga_buffer.offset(2 as isize) = *text.get(0).unwrap();
+    //     *vga_buffer.offset(3 as isize) = 0xb;
+    // }
 }
