@@ -9,6 +9,8 @@ pub fn print(
     a3: &mut u8,
     a4: &mut u8,
     a5: &mut u8,
+    a6: &mut u8,
+    a7: &mut u8,
 ) {
     *a.unwrap() += 1;
     *a1 += 1;
@@ -17,6 +19,8 @@ pub fn print(
     *a3 += 1;
     *a4 += 1;
     *a5 += 1;
+    *a6 += 1;
+    *a7 += 1;
     let vga_buffer = VGA_MEMORY as *mut u8;
 
     unsafe {
@@ -27,12 +31,12 @@ pub fn print(
     for (i, &byte) in text.iter().enumerate() {
         unsafe {
             *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xc;
+            *vga_buffer.offset(i as isize * 2 + 1) = 0x9;
         }
     }
 
-    unsafe {
-        *vga_buffer.offset(2 as isize) = *text.get(0).unwrap();
-        *vga_buffer.offset(3 as isize) = 0xb;
-    }
+    // unsafe {
+    //     *vga_buffer.offset(2 as isize) = *text.get(0).unwrap();
+    //     *vga_buffer.offset(3 as isize) = 0xb;
+    // }
 }

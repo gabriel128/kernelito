@@ -2,6 +2,7 @@
 BITS 16
 
 KERNEL_OFFSET equ 0x0100000
+KERNEL_OFFSET2 equ 0x0100100
 ;; KERNEL_OFFSET equ 0x9000
 ;; Just in case dl gets overriden
 
@@ -71,7 +72,7 @@ after_pmode_switch:
     jmp $
 
 imports_pmode:
-    %include "bootloader/utils/disk32.asm"
+    %include "bootloader/utils/disk32ata.asm"
 
 [BITS 16]
 

@@ -1,11 +1,23 @@
 all: build run
 
 build: clean
-	nasm -g bootloader/boot.asm -f bin -o bin/boot.bin
+	nasm -g bootloader/main.asm -f bin -o bin/boot.bin
+
+	cargo build --release
+	cp target/i686/release/libkernelito.a build/libkernelito.a
+	ld --gc-sections -n -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+
+	dd if=./bin/boot.bin >> ./bin/kernel.img
+	dd if=./bin/kernel.bin >> ./bin/kernel.img
+	truncate --size 10M ./bin/kernel.img
+
+build-debug: clean
+	nasm -g bootloader/main.asm -f bin -o bin/boot.bin
 
 	cargo build
 	cp target/i686/debug/libkernelito.a build/libkernelito.a
-	i686-elf-ld -n -gc-sections -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+	ld -g --gc-sections -n -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+	# ld -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
 
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img
@@ -28,5 +40,5 @@ clean:
 	rm -rf build/*
 	rm -rf bin/*
 
-debug: build
+debug: build-debug
 	gdb -q

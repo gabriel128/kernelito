@@ -7,6 +7,8 @@ target = "arch/i686.json"
 # target = "arch/x86.json"
 
 rustflags = [
+  # "-C", "link-dead-code",
+  # "-C", "linker-plugin-lto",
   # "-C", "relocation-model=static",
   # "--emit", "obj=test.o",
   # "-C", "panic=abort"

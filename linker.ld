@@ -1,13 +1,12 @@
 /* OUTPUT_FORMAT(binary) */
 OUTPUT_FORMAT(elf32-i386)
-__max_stack_size = 0x200;
 
 ENTRY(_start)
 SECTIONS
 {
-    /* .boot 0x7c00 : { */
-    /*     *(.boot.*); */
-    /* } */
+    .boot 0x7c00 : {
+        *(.boot.*);
+    }
 
     . = 1M;
     .text : ALIGN(4K)
@@ -35,11 +34,4 @@ SECTIONS
     {
         *(.asm)
     }
-
-    /* /DISCARD/ : { */
-    /*    *(.comment) */
-    /*    *(.eh_frame) */
-    /*    *(.eh_frame_hdr) */
-    /*    *(.rel.eh_frame) */
-    /* } */
 }
