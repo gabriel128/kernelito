@@ -1,6 +1,3 @@
-;; CODE_SEG_OFFSET equ gdt_code - gdt_start
-;; DATA_SEG_OFFSET equ gdt_data - gdt_start
-
 gdt_start:
 ;;; Offset + 0
 gdt_null:

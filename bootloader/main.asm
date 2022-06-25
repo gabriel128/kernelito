@@ -2,11 +2,10 @@
 BITS 16
 
 KERNEL_OFFSET equ 0x0100000
-KERNEL_OFFSET2 equ 0x0100100
 ;; KERNEL_OFFSET equ 0x9000
-;; Just in case dl gets overriden
 
 setup_real_mode:
+    ;; Just in case dl gets overriden
     mov [BOOT_DRIVE], dl
     cli ; Clear Interrupts
     mov ax, 0x00
@@ -21,13 +20,12 @@ start_real_mode:
     mov si, REAL_MODE_START_MSG
     call rm_print_string
 
-    ;; Load kernel in real mode
+    ;; Loads kernel in real mode
     ;; mov al, 125                 ; Loads 64KB to not break the DMA boundaries
     ;; mov cl, 2                   ; Start reading from the second sector
     ;; mov bx, KERNEL_OFFSET
     ;; mov dl, [BOOT_DRIVE]
     ;; call load_kernel
-
     ;; mov si, KERNEL_OFFSET
     ;; call rm_print_string
 
@@ -41,7 +39,7 @@ start_real_mode:
 
 imports_real_mode:
     %include "bootloader/utils/debug_print.asm"
-    ;; %include "src/bootloader/utils/disk.asm"
+    %include "bootloader/utils/disk.asm"
     %include "bootloader/switch_pmode.asm"
 
 [BITS 32]
@@ -52,15 +50,7 @@ after_pmode_switch:
     mov edi, KERNEL_OFFSET
     call ata_lba_read
 
-    ;; add eax, 200
-    ;; add ebx, 200
-    ;; mov ecx, 200
-
-    ;; mov edi, ebx
-    ;; call ata_lba_read
-
-    ;;  Debug
-
+    ;;  Debug - prints 4 in the screen
     mov ebx, 0xB8100
     mov eax, [MSG]
     push eax
@@ -72,7 +62,7 @@ after_pmode_switch:
     jmp $
 
 imports_pmode:
-    %include "bootloader/utils/disk32ata.asm"
+    %include "bootloader/utils/disk32.asm"
 
 [BITS 16]
 
