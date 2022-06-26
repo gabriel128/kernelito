@@ -39,7 +39,7 @@ start_real_mode:
 
 imports_real_mode:
     %include "bootloader/utils/debug_print.asm"
-    %include "bootloader/utils/disk.asm"
+    ;; %include "bootloader/utils/disk.asm"
     %include "bootloader/switch_pmode.asm"
 
 [BITS 32]
@@ -51,11 +51,11 @@ after_pmode_switch:
     call ata_lba_read
 
     ;;  Debug - prints 4 in the screen
-    mov ebx, 0xB8100
-    mov eax, [MSG]
-    push eax
-    pop ecx
-    mov [ebx], ecx
+    ;; mov ebx, 0xB8100
+    ;; mov eax, [MSG]
+    ;; push eax
+    ;; pop ecx
+    ;; mov [ebx], ecx
 
     jmp CODE_SEG:KERNEL_OFFSET
     ;; shouldn't reach here
