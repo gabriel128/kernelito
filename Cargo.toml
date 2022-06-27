@@ -22,5 +22,5 @@ codegen-units = 1
 
 [dependencies]
 ufmt = "0.1.0"
-# lazy_static = {version = "1.4", features= ["spin_no_std"]}
-# spin = "0.5.2"
+lazy_static = {version = "1.4", features= ["spin_no_std"]}
+spin = "0.5.2"
