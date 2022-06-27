@@ -9,7 +9,7 @@ build: clean
 
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img
-	truncate --size 10M ./bin/kernel.img
+	truncate --size 1M ./bin/kernel.img
 
 build-debug: clean
 	nasm -g bootloader/main.asm -f bin -o bin/boot.bin
@@ -22,6 +22,7 @@ build-debug: clean
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img
 	truncate --size 10M ./bin/kernel.img
+	make run
 
 run:
 	qemu-system-x86_64 -drive format=raw,file=bin/kernel.img

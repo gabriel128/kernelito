@@ -9,25 +9,16 @@ target = "arch/i686.json"
 rustflags = [
   # "-C", "link-dead-code",
   # "-C", "linker-plugin-lto",
-  "-C", "relocation-model=static",
   # "--emit", "obj=test.o",
-  # "-C", "panic=abort"
   # This is needed if your flash or ram addresses are not aligned to 0x10000 in memory.x
   # See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
-  # "-C", "link-arg=--nmagic",
 
-  # LLD (shipped with the Rust toolchain) is used as the default linker
+  # "-C", "link-arg=--nmagic",
+  # "-C", "relocation-model=static",
+  # "-C", "relocation-model=static",
   # "-C", "link-arg=-Tlinker.ld",
   # "-C", "link-arg=-melf_i386",
   # "-C", "link-arg=--gc-sections",
-  # if you run into problems with LLD switch to the GNU linker by commenting out
-  # this line
-  # "-C", "linker=arm-none-eabi-ld",
-
-  # if you need to link to pre-compiled C libraries provided by a C toolchain
-  # use GCC as the linker by commenting out both lines above and then
-  # uncommenting the three lines below
-  # "-C", "linker=arm-none-eabi-gcc",
-  # "-C", "link-arg=-Wl,-Tlink.x",
+  # "-C", "link-arg=-Wl",
   # "-C", "link-arg=-nostartfiles",
 ]

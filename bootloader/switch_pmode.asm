@@ -21,8 +21,8 @@ init_prot_mode:
     mov fs, ax
     mov gs, ax
     ;; Setup stack
-    mov ebp, 0x01000000
-    mov esp, ebp
+    mov esp, 0x07000000
+    mov ebp, esp
 
     ;; Enable A20 mode
     in al, 0x92

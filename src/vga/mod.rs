@@ -1,14 +1,36 @@
+use core::convert::Infallible;
+
+use ufmt::uWrite;
+
 static VGA_MEMORY_ADDR: u32 = 0xb8000;
-const MAX_WIDTH: u32 = 80;
-const MAX_HEIGHT: u32 = 25;
+const MAX_WIDTH: u8 = 80;
+const MAX_HEIGHT: u8 = 25;
 
 // TODO
 // - add print fn
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct VgaDriver {
-    curr_x: u32,
-    curr_y: u32,
+    curr_x: u8,
+    curr_y: u8,
+}
+
+impl core::fmt::Write for VgaDriver {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        self.print_byte(b'C', Color::Red);
+        // self.printstr(s);
+        Ok(())
+    }
+}
+
+impl uWrite for VgaDriver {
+    type Error = Infallible;
+
+    fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
+        // self.print_byte(b'C', Color::Red);
+        self.printstr(s);
+        Ok(())
+    }
 }
 
 impl VgaDriver {
@@ -26,7 +48,9 @@ impl VgaDriver {
     }
 
     fn current_mem_position(&self) -> *mut u8 {
-        (VGA_MEMORY_ADDR + ((self.curr_y * 2 * MAX_WIDTH) + (2 * self.curr_x))) as *mut u8
+        let y: u32 = (self.curr_y as u16 * 2 * MAX_WIDTH as u16).into();
+        let x: u32 = (2 * self.curr_x).into();
+        (VGA_MEMORY_ADDR + y + x) as *mut u8
     }
 
     fn move_cursor_next(&mut self) {
@@ -45,8 +69,10 @@ impl VgaDriver {
     }
 
     pub fn clean_screen(&mut self) {
-        for _ in 0..(MAX_WIDTH * MAX_HEIGHT + 10) {
-            self.print_byte(b' ', Color::Black);
+        for _ in 0..MAX_HEIGHT {
+            for _ in 0..MAX_WIDTH {
+                self.print_byte(b' ', Color::Black);
+            }
         }
     }
 
@@ -70,6 +96,13 @@ impl VgaDriver {
         self.print_byte(a_char as u8, Color::White)
     }
 
+    pub fn printstr2(&mut self, a_str: &str) {
+        self.printstr3(a_str);
+    }
+
+    pub fn printstr3(&mut self, a_str: &str) {
+        self.printstr(a_str);
+    }
     pub fn printstr(&mut self, a_str: &str) {
         for a_char in a_str.as_bytes() {
             self.print_byte(*a_char, Color::White)
