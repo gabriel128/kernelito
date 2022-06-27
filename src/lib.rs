@@ -2,25 +2,22 @@
 #![no_main]
 #![feature(lang_items)]
 #![feature(panic_info_message)]
+// use te::vga::kprintln;
 
 mod vga;
 
 use core::{arch::asm, panic::PanicInfo};
-use ufmt::uwrite;
-// use lazy_static::lazy_static;
-// use spin::Mutex;
 
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
+pub fn _start() -> ! {
     vga::init();
-    vga::printstr("Starting\n");
+    kprintln!("Starting");
+    kprintln!("Starting Again");
     let x: Option<i32> = None;
     x.unwrap();
 
     loop {
-        unsafe {
-            asm!("hlt");
-        }
+        halt();
     }
 }
 
@@ -28,19 +25,26 @@ pub extern "C" fn _start() -> ! {
 fn panic(panic_info: &PanicInfo) -> ! {
     if let (Some(args), Some(location)) = (panic_info.message(), panic_info.location()) {
         let panic_message = args.as_str().unwrap();
-        uwrite!(
-            vga::driver_guard(),
+        kprinterror!(
             "Panic occurred: {} in {}:{}:{}",
             panic_message,
             location.file(),
             location.line(),
             location.column(),
-        )
-        .unwrap();
+        );
     } else {
-        uwrite!(vga::driver_guard(), "Panic: Unknown ERROR").unwrap();
+        kprinterror!("Panic: Unknown ERROR");
     }
-    loop {}
+
+    loop {
+        halt();
+    }
+}
+
+fn halt() {
+    unsafe {
+        asm!("hlt");
+    }
 }
 
 #[lang = "eh_personality"]
