@@ -11,7 +11,7 @@ use core::{arch::asm, panic::PanicInfo};
 use vga::utils::print_ok_loading_message;
 
 #[no_mangle]
-pub fn _start() -> ! {
+pub extern "C" fn _start() -> ! {
     vga::init();
     print_ok_loading_message("Bootlader");
     print_ok_loading_message("VGA Driver");

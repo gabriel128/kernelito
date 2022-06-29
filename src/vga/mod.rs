@@ -32,6 +32,7 @@ pub enum Color {
     White,
     Red,
     Green,
+    LightGreen,
     Gray,
 }
 
@@ -49,6 +50,7 @@ impl From<&Color> for u8 {
             Color::Red => 0x4,
             Color::Green => 0x2,
             Color::Gray => 0x7,
+            Color::LightGreen => 0xA,
         }
     }
 }
@@ -60,6 +62,7 @@ impl From<Color> for u8 {
             Color::Red => 0x4,
             Color::Green => 0x2,
             Color::Gray => 0x7,
+            Color::LightGreen => 0xA,
         }
     }
 }
