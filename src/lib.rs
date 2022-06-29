@@ -11,10 +11,9 @@ use core::{arch::asm, panic::PanicInfo};
 #[no_mangle]
 pub fn _start() -> ! {
     vga::init();
-    kprintln!("Starting");
-    kprintln!("Starting Again");
-    let x: Option<i32> = None;
-    x.unwrap();
+    vga::utils::print_ok_loading_message("VGA Driver loaded");
+
+    vga::utils::test_screen();
 
     loop {
         halt();
@@ -25,6 +24,7 @@ pub fn _start() -> ! {
 fn panic(panic_info: &PanicInfo) -> ! {
     if let (Some(args), Some(location)) = (panic_info.message(), panic_info.location()) {
         let panic_message = args.as_str().unwrap();
+
         kprinterror!(
             "Panic occurred: {} in {}:{}:{}",
             panic_message,

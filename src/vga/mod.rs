@@ -1,59 +1,88 @@
 #![allow(dead_code)]
-use core::convert::Infallible;
+use core::{
+    convert::Infallible,
+    sync::atomic::{AtomicI16, Ordering},
+};
 
-use lazy_static::lazy_static;
-use spin::Mutex;
 use ufmt::uWrite;
+#[macro_use]
+pub mod macros;
+pub mod utils;
 
-static VGA_MEMORY_ADDR: u32 = 0xb8000;
-const WIDTH: u8 = 80;
-const HEIGHT: u8 = 25;
+static VGA_MEMORY_ADDR: i32 = 0xb8000;
+const WIDTH: i16 = 80;
+const HEIGHT: i16 = 25;
 
-lazy_static! {
-    pub static ref VGA_DRIVER: Mutex<VgaDriver> = Mutex::new(VgaDriver::new());
-}
-
-#[macro_export]
-macro_rules! kprintln {
-    ($($arg:tt)*) => {{
-        ufmt::uwrite!(vga::VGA_DRIVER.lock(), $($arg)*).unwrap();
-        ufmt::uwrite!(vga::VGA_DRIVER.lock(), "\n").unwrap();
-    }}
-}
-
-#[macro_export]
-macro_rules! kprinterror {
-    ($($arg:tt)*) => {{
-        vga::VGA_DRIVER.lock().change_char_color_to(vga::Color::Red);
-        ufmt::uwrite!(vga::VGA_DRIVER.lock(), $($arg)*).unwrap();
-        ufmt::uwrite!(vga::VGA_DRIVER.lock(), "\n").unwrap();
-        vga::VGA_DRIVER.lock().change_char_color_to(vga::Color::White);
-    }}
-}
-
-#[macro_export]
-macro_rules! kprint {
-    ($($arg:tt)*) => {{
-        ufmt::uwrite!(VGA_DRIVER.lock(), $($arg)*).unwrap();
-    }}
-}
+static CURRX: AtomicI16 = AtomicI16::new(0);
+static CURRY: AtomicI16 = AtomicI16::new(0);
 
 pub fn init() {
-    VGA_DRIVER.lock().init();
+    let vga = VgaDriver::new(Color::default());
+    vga.init()
 }
 
-pub fn println(s: &str) {
-    VGA_DRIVER.lock().println(s);
+pub fn cursor_coords() -> (i16, i16) {
+    (CURRX.load(Ordering::Relaxed), CURRY.load(Ordering::Relaxed))
 }
 
-pub fn driver_guard() -> spin::MutexGuard<'static, VgaDriver> {
-    VGA_DRIVER.lock()
+#[derive(Debug, Clone)]
+pub enum Color {
+    Black,
+    White,
+    Red,
+    Green,
+    Gray,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl Default for Color {
+    fn default() -> Self {
+        Color::Gray
+    }
+}
+
+impl From<&Color> for u8 {
+    fn from(color: &Color) -> Self {
+        match color {
+            Color::Black => 0x0,
+            Color::White => 0xF,
+            Color::Red => 0x4,
+            Color::Green => 0x2,
+            Color::Gray => 0x7,
+        }
+    }
+}
+impl From<Color> for u8 {
+    fn from(color: Color) -> Self {
+        match color {
+            Color::Black => 0x0,
+            Color::White => 0xF,
+            Color::Red => 0x4,
+            Color::Green => 0x2,
+            Color::Gray => 0x7,
+        }
+    }
+}
+
+#[repr(C)]
+struct ScreenChar {
+    ascii: u8,
+    color: u8,
+}
+
+impl ScreenChar {
+    fn new(ascii: u8, color: u8) -> Self {
+        Self { ascii, color }
+    }
+}
+
+impl Into<u16> for ScreenChar {
+    fn into(self) -> u16 {
+        ((self.color as u16) << 8) | self.ascii as u16
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct VgaDriver {
-    curr_x: u8,
-    curr_y: u8,
     char_color: Color,
 }
 
@@ -67,117 +96,93 @@ impl uWrite for VgaDriver {
 }
 
 impl VgaDriver {
-    pub fn new() -> Self {
-        Self {
-            curr_x: 0,
-            curr_y: 0,
-            char_color: Color::White.into(),
-        }
+    pub fn new(char_color: Color) -> Self {
+        Self { char_color }
     }
 
-    pub fn init(&mut self) {
+    pub fn init(&self) {
         self.clean_screen();
-        self.curr_x = 0;
-        self.curr_y = 0;
+        CURRX.store(0, Ordering::Relaxed);
+        CURRY.store(0, Ordering::Relaxed);
     }
 
+    fn curr_x(&self) -> i16 {
+        CURRX.load(Ordering::Relaxed)
+    }
+    fn curr_y(&self) -> i16 {
+        CURRY.load(Ordering::Relaxed)
+    }
+
+    // (1, 0) => 2
+    // (10, 0) => 20
+    // (0, 1) => 81
+    // (80, 1) => 81
     fn current_mem_position(&self) -> *mut u16 {
-        let y: u32 = (self.curr_y as u16 * 2 * WIDTH as u16).into();
-        let x: u32 = (2 * self.curr_x).into();
+        let y: i32 = (2 * self.curr_y() * WIDTH).into();
+        let x: i32 = (2 * self.curr_x()).into();
         (VGA_MEMORY_ADDR + y + x) as *mut u16
     }
 
-    fn move_cursor_next(&mut self) {
-        if self.curr_y >= HEIGHT {
+    fn move_cursor_next(&self) {
+        if self.curr_y() as i16 >= HEIGHT {
             // Nothing for now
-        } else if self.curr_x >= WIDTH {
+        } else if self.curr_x() >= WIDTH {
             self.next_line();
         } else {
-            self.curr_x += 1;
+            CURRX.fetch_add(1, Ordering::Relaxed);
         }
     }
 
-    fn next_line(&mut self) {
-        self.curr_x = 0;
-        self.curr_y += 1;
+    fn next_line(&self) {
+        CURRX.store(0, Ordering::Relaxed);
+        CURRY.fetch_add(1, Ordering::Relaxed);
     }
 
-    pub fn clean_screen(&mut self) {
+    pub fn clean_screen(&self) {
         for _ in 0..HEIGHT {
             for _ in 0..WIDTH {
-                self.print_byte(b' ', Color::Black.into());
+                self.print_byte(b' ', &Color::Black);
             }
         }
     }
 
-    fn print_byte(&mut self, a_byte: u8, color: u8) {
+    fn print_byte(&self, a_byte: u8, color: &Color) {
         if a_byte == b'\n' {
             self.next_line();
             return;
         }
 
         let curr_mem_position = self.current_mem_position();
-        let the_color: u8 = color.into();
 
         unsafe {
-            *curr_mem_position.offset(0 as isize) = ((the_color as u16) << 8) | a_byte as u16;
+            core::ptr::write_volatile(
+                curr_mem_position.offset(0 as isize),
+                ScreenChar::new(a_byte, color.into()).into(),
+            );
         }
 
         self.move_cursor_next();
     }
 
-    pub fn change_char_color_to(&mut self, color: Color) {
-        self.char_color = color.into();
+    pub fn print_char(&self, a_char: char) {
+        self.print_byte(a_char as u8, &self.char_color)
     }
 
-    pub fn print_char(&mut self, a_char: char) {
-        let color: u8 = self.char_color.clone().into();
-        self.print_byte(a_char as u8, color);
-    }
-
-    pub fn print(&mut self, a_str: &str) {
-        let color: u8 = self.char_color.clone().into();
+    pub fn print(&self, a_str: &str) {
         for a_char in a_str.as_bytes() {
-            self.print_byte(*a_char, color);
+            self.print_byte(*a_char, &self.char_color)
         }
     }
 
-    pub fn println(&mut self, a_str: &str) {
-        let color: u8 = self.char_color.clone().into();
+    pub fn println(&self, a_str: &str) {
         self.print(a_str);
-        self.print_byte(b'\n', color);
+        self.print_byte(b'\n', &self.char_color)
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Color {
-    Black,
-    White,
-    Red,
-}
-
-impl From<Color> for u8 {
-    fn from(color: Color) -> Self {
-        match color {
-            Color::Black => 0x0,
-            Color::White => 0xF,
-            Color::Red => 0x4,
-        }
-    }
-}
-
-impl From<&Color> for u8 {
-    fn from(color: &Color) -> Self {
-        match color {
-            Color::Black => 0x0,
-            Color::White => 0xF,
-            Color::Red => 0x4,
-        }
-    }
-}
-
+// For local dummy testing.
 // Call with b"Check this out, all this stuff is coming from rust!!!",
-pub fn test_print(text: &[u8]) {
+fn test_print(text: &[u8]) {
     let vga_buffer = VGA_MEMORY_ADDR as *mut u8;
 
     unsafe {
