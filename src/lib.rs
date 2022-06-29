@@ -2,18 +2,21 @@
 #![no_main]
 #![feature(lang_items)]
 #![feature(panic_info_message)]
-// use te::vga::kprintln;
 
+mod checks;
 mod vga;
 
 use core::{arch::asm, panic::PanicInfo};
 
+use vga::utils::print_ok_loading_message;
+
 #[no_mangle]
 pub fn _start() -> ! {
     vga::init();
-    vga::utils::print_ok_loading_message("VGA Driver loaded");
+    print_ok_loading_message("Bootlader");
+    print_ok_loading_message("VGA Driver");
 
-    vga::utils::test_screen();
+    checks::run_checks();
 
     loop {
         halt();

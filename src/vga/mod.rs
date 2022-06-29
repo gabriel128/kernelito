@@ -4,10 +4,10 @@ use core::{
     sync::atomic::{AtomicI16, Ordering},
 };
 
+pub mod utils;
 use ufmt::uWrite;
 #[macro_use]
 pub mod macros;
-pub mod utils;
 
 static VGA_MEMORY_ADDR: i32 = 0xb8000;
 const WIDTH: i16 = 80;
@@ -16,6 +16,7 @@ const HEIGHT: i16 = 25;
 static CURRX: AtomicI16 = AtomicI16::new(0);
 static CURRY: AtomicI16 = AtomicI16::new(0);
 
+#[inline(always)]
 pub fn init() {
     let vga = VgaDriver::new(Color::default());
     vga.init()

@@ -20,6 +20,16 @@ macro_rules! kprint {
 }
 
 #[macro_export]
+macro_rules! kprint_color {
+    ($color:expr, $($arg:tt)*) => {{
+        use crate::vga::VgaDriver;
+
+        let mut vga = VgaDriver::new($color);
+        ufmt::uwrite!(&mut vga, $($arg)*).unwrap();
+    }}
+}
+
+#[macro_export]
 macro_rules! kprinterror {
     ($($arg:tt)*) => {{
         use crate::vga::{VgaDriver, Color};

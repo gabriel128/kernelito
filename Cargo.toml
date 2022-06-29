@@ -16,9 +16,9 @@ panic = "abort"
 debug = false
 
 lto = true
-incremental = false
-codegen-units = 1
+codegen-units = 2
 
+# incremental = false
 # overflow-checks = true
 # opt-level = 0
 
