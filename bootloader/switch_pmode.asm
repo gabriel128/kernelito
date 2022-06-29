@@ -21,12 +21,15 @@ init_prot_mode:
     mov fs, ax
     mov gs, ax
     ;; Setup stack
-    mov ebp, 0x01000000
-    mov esp, ebp
+    mov esp, 0x08000000
+    mov ebp, esp
 
     ;; Enable A20 mode
     in al, 0x92
+    test al, 2
+    jnz after
     or al, 2
+    and al, 0xFE
     out 0x92, al
-
-    jmp after_pmode_switch
+    after:
+        jmp after_pmode_switch

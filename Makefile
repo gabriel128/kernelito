@@ -5,7 +5,7 @@ build: clean
 
 	cargo build --release
 	cp target/i686/release/libkernelito.a build/libkernelito.a
-	ld --gc-sections -n -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+	i686-elf-ld -g -n --gc-sections -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
 
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img
@@ -22,9 +22,12 @@ build-debug: clean
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img
 	truncate --size 10M ./bin/kernel.img
+	make run
 
 run:
+	# qemu-system-x86_64 -drive format=raw,file=bin/kernel.img display sdl -vga none -device virtio-vga,xres=800,yres=600
 	qemu-system-x86_64 -drive format=raw,file=bin/kernel.img
+	# qemu-system-i386 -hda ./bin/kernel.img
 
 # DEPRECATED
 # c-kernel: clean
@@ -40,5 +43,10 @@ clean:
 	rm -rf build/*
 	rm -rf bin/*
 
-debug: build-debug
-	gdb -q
+debug: build
+	gdb -ex 'target remote | qemu-system-i386 -hda ./bin/kernel.img -S -gdb stdio' \
+        -ex 'set architecture i386' \
+        -ex 'add-symbol-file ./symbols' \
+		-ex 'hbreak *0x100000' \
+		-ex 'continue' \
+		-ex 'layout src'

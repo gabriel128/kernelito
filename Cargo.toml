@@ -12,9 +12,17 @@ crate-type = ["staticlib"]
 panic = "abort"
 
 [profile.release]
-debug = false
-overflow-checks = true
 panic = "abort"
-# opt-level=0
+debug = false
+
+lto = true
+codegen-units = 2
+
+# incremental = false
+# overflow-checks = true
+# opt-level = 0
 
 [dependencies]
+ufmt = "0.1.0"
+# lazy_static = {version = "1.4", features= ["spin_no_std"]}
+# spin = "0.5.2"

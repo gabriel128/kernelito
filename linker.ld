@@ -1,5 +1,5 @@
-/* OUTPUT_FORMAT(binary) */
-OUTPUT_FORMAT(elf32-i386)
+OUTPUT_FORMAT(binary)
+/* OUTPUT_FORMAT(elf32-i386) */
 
 ENTRY(_start)
 SECTIONS
@@ -34,4 +34,10 @@ SECTIONS
     {
         *(.asm)
     }
+
+    /* /DISCARD/ : { */
+    /*     *(.comment) */
+    /*     *(.eh_frame) */
+    /*     *(.rel.eh_frame) */
+    /* } */
 }

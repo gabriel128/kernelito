@@ -11,5 +11,6 @@
   "linker": "rust-lld",
   "panic-strategy": "abort",
   "disable-redzone": true,
-  "features": "+soft-float,+sse"
+  "features": "-mmx,-sse,+soft-float",
+  "relocation-model": "static"
 }
