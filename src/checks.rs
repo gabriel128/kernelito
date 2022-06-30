@@ -10,13 +10,13 @@ pub fn run_checks() {
 
 fn check_vga() {
     kprintln!("- Starting vga checks...");
-    for _ in 0..(80 * 10) {
+    for _ in 0..(80 * 25) {
         kprint!("X");
     }
 
-    kprintln!("");
-    kprintln!("");
-    kprintln!("- Starting panic checks...");
-    let x: Option<i32> = None;
-    x.unwrap();
+    // kprintln!("");
+    // kprintln!("");
+    // kprintln!("- Starting panic checks...");
+    // let x: Option<i32> = None;
+    // x.unwrap();
 }

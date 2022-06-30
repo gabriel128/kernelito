@@ -26,7 +26,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(panic_info: &PanicInfo) -> ! {
     if let (Some(args), Some(location)) = (panic_info.message(), panic_info.location()) {
-        let panic_message = args.as_str().unwrap();
+        let panic_message = args.as_str().unwrap_or("");
 
         kprinterror!(
             "Panic occurred: {} in {}:{}:{}",

@@ -111,20 +111,21 @@ impl VgaDriver {
     }
 
     fn curr_x(&self) -> i16 {
-        CURRX.load(Ordering::Relaxed)
+        CURRX.load(Ordering::SeqCst)
     }
     fn curr_y(&self) -> i16 {
-        CURRY.load(Ordering::Relaxed)
+        CURRY.load(Ordering::SeqCst)
     }
 
     // (1, 0) => 2
     // (10, 0) => 20
     // (0, 1) => 81
     // (80, 1) => 81
-    fn current_mem_position(&self) -> *mut u16 {
+    fn current_mem_position(&self) -> i32 {
         let y: i32 = (2 * self.curr_y() * WIDTH).into();
         let x: i32 = (2 * self.curr_x()).into();
-        (VGA_MEMORY_ADDR + y + x) as *mut u16
+
+        VGA_MEMORY_ADDR + y + x
     }
 
     fn move_cursor_next(&self) {
@@ -158,14 +159,44 @@ impl VgaDriver {
 
         let curr_mem_position = self.current_mem_position();
 
-        unsafe {
-            core::ptr::write_volatile(
-                curr_mem_position.offset(0 as isize),
-                ScreenChar::new(a_byte, color.into()).into(),
-            );
-        }
+        self.write_to_screen(curr_mem_position, a_byte, color.into());
 
         self.move_cursor_next();
+    }
+
+    // #[inline(always)]
+    fn write_to_screen(&self, mem_addr: i32, a_byte: u8, color: u8) {
+        if mem_addr < VGA_MEMORY_ADDR {
+            CURRX.store(0, Ordering::SeqCst);
+            CURRY.store(0, Ordering::SeqCst);
+
+            core::sync::atomic::compiler_fence(Ordering::SeqCst);
+            kprinterror!(
+                "[VGA Error] Trying to access wrong memory {:#?} \n",
+                mem_addr as *const u8
+            );
+            panic!("Segfault");
+        }
+
+        // 4000 = 80*25*2
+        if mem_addr > (VGA_MEMORY_ADDR + 4000) {
+            CURRX.store(0, Ordering::SeqCst);
+            CURRY.store(0, Ordering::SeqCst);
+
+            core::sync::atomic::compiler_fence(Ordering::SeqCst);
+            kprinterror!(
+                "[VGA Error] Trying to access wrong memory {:#?} \n",
+                mem_addr as *const u8
+            );
+            panic!("Segfault");
+        }
+
+        unsafe {
+            core::ptr::write_volatile(
+                (mem_addr as *mut u16).offset(0 as isize),
+                ScreenChar::new(a_byte, color).into(),
+            );
+        }
     }
 
     pub fn print_char(&self, a_char: char) {
@@ -186,11 +217,8 @@ impl VgaDriver {
 
 // For local dummy testing.
 // Call with b"Check this out, all this stuff is coming from rust!!!",
-fn test_print(text: &[u8]) {
-    let vga_buffer = VGA_MEMORY_ADDR as *mut u8;
+fn test_print() {
+    let vga_buffer = VGA_MEMORY_ADDR as *mut u32;
 
-    unsafe {
-        *vga_buffer.offset(0 as isize) = *text.get(0).unwrap();
-        *vga_buffer.offset(1 as isize) = 0xb;
-    }
+    unsafe { *vga_buffer.offset(0 as isize) = 0x07690748 }
 }
