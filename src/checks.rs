@@ -1,22 +1,37 @@
-use crate::{kprint, kprint_color, kprintln, vga::Color};
+#![allow(dead_code)]
+use crate::{kprint, kprint_color, vga::Color};
 
-pub fn run_checks() {
-    kprintln!("");
-    kprint_color!(Color::Green, "Starting checks...");
-    kprintln!("");
+#[cfg(not(feature = "checks-mode"))]
+pub fn run() {}
+
+#[cfg(feature = "checks-mode")]
+pub fn run() {
+    kprint_color!(Color::Green, "Starting checks... \n");
 
     check_vga();
+    check_panics();
 }
 
-fn check_vga() {
-    kprintln!("- Starting vga checks...");
-    for _ in 0..(80 * 10) {
+pub fn check_vga() {
+    kprint_color!(
+        Color::Green,
+        "\n============== Starting VGA checks ==============\n"
+    );
+    for _ in 0..(81 * 10) {
         kprint!("X");
     }
 
-    kprintln!("");
-    kprintln!("");
-    kprintln!("- Starting panic checks...");
+    kprint_color!(
+        Color::Green,
+        "==============vga checks finished==============\n"
+    );
+}
+
+fn check_panics() {
+    kprint_color!(
+        Color::Green,
+        "\n============== Starting panic checks ==============\n"
+    );
     let x: Option<i32> = None;
     x.unwrap();
 }

@@ -12,21 +12,34 @@ use vga::utils::print_ok_loading_message;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    vga::init();
+    welcome_msg();
+
     print_ok_loading_message("Bootlader");
     print_ok_loading_message("VGA Driver");
 
-    checks::run_checks();
+    checks::run();
+
+    kprintln!("kernelito>");
 
     loop {
         halt();
     }
 }
 
+fn welcome_msg() {
+    kprintln!("");
+    kprintln!("||  //        ==    ========   =====");
+    kprintln!("|| //         ||       ||     ||   ||");
+    kprintln!("||       ==   ||       ||     ||   ||");
+    kprintln!("|| \\\\         ||       ||     ||   ||");
+    kprintln!("||  \\\\        ||       ||      =====");
+    kprintln!("");
+}
+
 #[panic_handler]
 fn panic(panic_info: &PanicInfo) -> ! {
     if let (Some(args), Some(location)) = (panic_info.message(), panic_info.location()) {
-        let panic_message = args.as_str().unwrap();
+        let panic_message = args.as_str().unwrap_or("");
 
         kprinterror!(
             "Panic occurred: {} in {}:{}:{}",

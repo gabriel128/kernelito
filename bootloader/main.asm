@@ -2,7 +2,7 @@
 BITS 16
 
 KERNEL_OFFSET equ 0x0100000
-;; KERNEL_OFFSET equ 0x9000
+;; KERNEL_RM_OFFSET equ 0x9000
 
 setup_real_mode:
     ;; Just in case dl gets overriden
@@ -20,6 +20,11 @@ start_real_mode:
     mov si, REAL_MODE_START_MSG
     call rm_print_string
 
+    ;; Hide cursor
+    mov ah, 0x1
+    mov ch, 0x3F
+    int 0x10
+
     ;; Loads kernel in real mode
     ;; mov al, 125                 ; Loads 64KB to not break the DMA boundaries
     ;; mov cl, 2                   ; Start reading from the second sector
@@ -28,7 +33,6 @@ start_real_mode:
     ;; call load_kernel
     ;; mov si, KERNEL_OFFSET
     ;; call rm_print_string
-
     mov si, PROTECTED_MODE_START_MSG
     call rm_print_string
 
@@ -39,7 +43,7 @@ start_real_mode:
 
 imports_real_mode:
     %include "bootloader/utils/debug_print.asm"
-    ;; %include "bootloader/utils/disk.asm"
+    %include "bootloader/utils/disk.asm"
     %include "bootloader/switch_pmode.asm"
 
 [BITS 32]
@@ -68,9 +72,9 @@ imports_pmode:
 
 ;; Declare consts
 BOOT_DRIVE db 0
-REAL_MODE_START_MSG:  db 10, "> Starting real mode (iow things are getting real). ", 0
+REAL_MODE_START_MSG:  db 0xa, "> Starting real mode (iow things are getting real). ", 0xa, 0xd, 0
 PROTECTED_MODE_START_MSG: db "> Starting protected mode. ", 0
-MSG:    db "4", 4
+TEST_MSG:    db "H", 4
 
 ;; Set magic number
 times 510-($-$$) db 0

@@ -7,22 +7,35 @@ edition = "2021"
 [lib]
 crate-type = ["staticlib"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# [profile.dev.package.compiler_builtins]
+# overflow-checks = false
+
 [profile.dev]
+strip = false
 panic = "abort"
+# opt-level = "z"
+lto = "fat"
+overflow-checks = false
+# opt-level = 1
+# codegen-units = 1
 
 [profile.release]
 panic = "abort"
-debug = false
+debug = true
+debug-assertions = false
 
 lto = true
 codegen-units = 2
 
-# incremental = false
-# overflow-checks = true
-# opt-level = 0
+incremental = false
+overflow-checks = false
+opt-level = 2
 
 [dependencies]
 ufmt = "0.1.0"
 # lazy_static = {version = "1.4", features= ["spin_no_std"]}
 # spin = "0.5.2"
+
+[features]
+default = []
+checks-mode = []
