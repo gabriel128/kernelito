@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use core::{
     convert::Infallible,
-    sync::atomic::{AtomicI16, Ordering},
+    sync::atomic::{AtomicU32, Ordering},
 };
 
 pub mod utils;
@@ -9,21 +9,21 @@ use ufmt::uWrite;
 #[macro_use]
 pub mod macros;
 
-static VGA_MEMORY_ADDR: i32 = 0xb8000;
-const WIDTH: i16 = 80;
-const HEIGHT: i16 = 25;
+static VGA_MEMORY_ADDR: u32 = 0xb8000;
+const WIDTH: u32 = 80;
+const HEIGHT: u32 = 25;
 
-static CURRX: AtomicI16 = AtomicI16::new(0);
-static CURRY: AtomicI16 = AtomicI16::new(0);
+// Global state on where the x coordinate is positioned
+static CURRX: AtomicU32 = AtomicU32::new(0);
 
 #[inline(always)]
-pub fn init() {
+pub fn clean_screen() {
     let vga = VgaDriver::new(Color::default());
-    vga.init()
+    vga.clean_screen();
 }
 
-pub fn cursor_coords() -> (i16, i16) {
-    (CURRX.load(Ordering::Relaxed), CURRY.load(Ordering::Relaxed))
+pub fn get_x_coord() -> u32 {
+    CURRX.load(Ordering::SeqCst)
 }
 
 #[derive(Debug, Clone)]
@@ -104,114 +104,145 @@ impl VgaDriver {
         Self { char_color }
     }
 
-    pub fn init(&self) {
-        self.clean_screen();
-        CURRX.store(0, Ordering::Relaxed);
-        CURRY.store(0, Ordering::Relaxed);
-    }
-
-    fn curr_x(&self) -> i16 {
-        CURRX.load(Ordering::SeqCst)
-    }
-    fn curr_y(&self) -> i16 {
-        CURRY.load(Ordering::SeqCst)
-    }
-
-    // (1, 0) => 2
-    // (10, 0) => 20
-    // (0, 1) => 81
-    // (80, 1) => 81
-    fn current_mem_position(&self) -> i32 {
-        let y: i32 = (2 * self.curr_y() * WIDTH).into();
-        let x: i32 = (2 * self.curr_x()).into();
-
-        VGA_MEMORY_ADDR + y + x
-    }
-
-    fn move_cursor_next(&self) {
-        if self.curr_y() as i16 >= HEIGHT {
-            // Nothing for now
-        } else if self.curr_x() >= WIDTH {
-            self.next_line();
-        } else {
-            CURRX.fetch_add(1, Ordering::Relaxed);
-        }
-    }
-
-    fn next_line(&self) {
-        CURRX.store(0, Ordering::Relaxed);
-        CURRY.fetch_add(1, Ordering::Relaxed);
-    }
-
-    pub fn clean_screen(&self) {
-        for _ in 0..HEIGHT {
-            for _ in 0..WIDTH {
-                self.print_byte(b' ', &Color::Black);
-            }
-        }
-    }
-
-    fn print_byte(&self, a_byte: u8, color: &Color) {
-        if a_byte == b'\n' {
-            self.next_line();
-            return;
-        }
-
-        let curr_mem_position = self.current_mem_position();
-
-        self.write_to_screen(curr_mem_position, a_byte, color.into());
-
-        self.move_cursor_next();
-    }
-
-    // #[inline(always)]
-    fn write_to_screen(&self, mem_addr: i32, a_byte: u8, color: u8) {
-        if mem_addr < VGA_MEMORY_ADDR {
-            CURRX.store(0, Ordering::SeqCst);
-            CURRY.store(0, Ordering::SeqCst);
-
-            core::sync::atomic::compiler_fence(Ordering::SeqCst);
-            kprinterror!(
-                "[VGA Error] Trying to access wrong memory {:#?} \n",
-                mem_addr as *const u8
-            );
-            panic!("Segfault");
-        }
-
-        // 4000 = 80*25*2
-        if mem_addr > (VGA_MEMORY_ADDR + 4000) {
-            CURRX.store(0, Ordering::SeqCst);
-            CURRY.store(0, Ordering::SeqCst);
-
-            core::sync::atomic::compiler_fence(Ordering::SeqCst);
-            kprinterror!(
-                "[VGA Error] Trying to access wrong memory {:#?} \n",
-                mem_addr as *const u8
-            );
-            panic!("Segfault");
-        }
-
-        unsafe {
-            core::ptr::write_volatile(
-                (mem_addr as *mut u16).offset(0 as isize),
-                ScreenChar::new(a_byte, color).into(),
-            );
-        }
-    }
-
+    #[inline(always)]
     pub fn print_char(&self, a_char: char) {
         self.print_byte(a_char as u8, &self.char_color)
     }
 
+    #[inline(always)]
     pub fn print(&self, a_str: &str) {
         for a_char in a_str.as_bytes() {
             self.print_byte(*a_char, &self.char_color)
         }
     }
 
+    #[inline(always)]
     pub fn println(&self, a_str: &str) {
         self.print(a_str);
-        self.print_byte(b'\n', &self.char_color)
+        self.print("\n");
+    }
+
+    #[inline(always)]
+    pub fn clean_screen(&self) {
+        for y in 0..HEIGHT {
+            for x in 0..WIDTH {
+                self.print_byte_at(b' ', &Color::Black, x, y);
+            }
+        }
+    }
+
+    pub fn scroll_up_one_line(&self) {
+        for y in 1..HEIGHT {
+            for x in 0..WIDTH {
+                let read_mem_addr = self.mem_position_from_coords(x, y);
+                let write_mem_addr = self.mem_position_from_coords(x, y - 1);
+
+                let mem_value = self.read_screen_char_from_screen(read_mem_addr);
+                self.write_to_screen(write_mem_addr, mem_value);
+            }
+        }
+
+        self.clean_last_row()
+    }
+
+    fn curr_x(&self) -> u32 {
+        CURRX.load(Ordering::SeqCst)
+    }
+
+    #[inline(always)]
+    fn set_x(&self, x: u32) {
+        CURRX.store(x, Ordering::SeqCst)
+    }
+
+    fn increase_x(&self) {
+        CURRX.fetch_add(1, Ordering::SeqCst);
+    }
+
+    fn last_row(&self) -> u32 {
+        HEIGHT - 1
+    }
+
+    #[inline(always)]
+    fn print_byte(&self, a_byte: u8, color: &Color) {
+        if a_byte == b'\n' {
+            self.next_line();
+            return;
+        }
+
+        self.print_byte_at(a_byte, color, self.curr_x(), self.last_row());
+
+        self.move_cursor_right();
+    }
+
+    #[inline(always)]
+    fn print_byte_at(&self, a_byte: u8, color: &Color, x: u32, y: u32) {
+        let curr_mem_position = self.mem_position_from_coords(x, y);
+
+        self.write_to_screen(
+            curr_mem_position,
+            ScreenChar::new(a_byte, color.into()).into(),
+        );
+    }
+
+    // (1, 0) => VGA_ADDR + 2
+    // (10, 0) => VGA_ADDR + 20
+    // (0, 1) => VGA_ADDR + 81
+    // (80, 1) => VGA_ADDR + 81
+    fn mem_position_from_coords(&self, x: u32, y: u32) -> u32 {
+        let translated_y: u32 = (2 * y * WIDTH).into();
+        let translated_x: u32 = (2 * x).into();
+
+        VGA_MEMORY_ADDR + translated_x + translated_y
+    }
+
+    fn move_cursor_right(&self) {
+        if self.curr_x() >= WIDTH {
+            self.next_line();
+        } else {
+            self.increase_x();
+        }
+    }
+
+    fn next_line(&self) {
+        self.set_x(0);
+        self.scroll_up_one_line();
+    }
+
+    fn clean_last_row(&self) {
+        for x in 0..WIDTH {
+            self.print_byte_at(b' ', &Color::Black, x, self.last_row());
+        }
+    }
+
+    #[inline(always)]
+    fn write_to_screen(&self, mem_addr: u32, screen_char: u16) {
+        self.assert_vga_memory(mem_addr);
+        // Safety: It shouldn never reach an invalid memory. Protected
+        // by the conditionals above
+        unsafe {
+            core::ptr::write_volatile((mem_addr as *mut u16).offset(0 as isize), screen_char);
+        }
+    }
+
+    #[inline(always)]
+    fn read_screen_char_from_screen(&self, mem_addr: u32) -> u16 {
+        self.assert_vga_memory(mem_addr);
+        // Safety: It shouldn never reach an invalid memory. Protected
+        // by the conditionals above
+        unsafe { core::ptr::read_volatile(mem_addr as *const u16) }
+    }
+
+    #[inline(always)]
+    // 4000 = 80*25*2 = WIDTH * HEIGHT * 1pixel(2 bytes)
+    // VGA_ADDR + 4000 = 0xB8FA0
+    fn assert_vga_memory(&self, mem_addr: u32) {
+        if mem_addr < VGA_MEMORY_ADDR || mem_addr > (VGA_MEMORY_ADDR + 4000) {
+            kprinterror!(
+                "[VGA Error] Trying to access wrong memory {:#?} \n",
+                mem_addr as *const u8
+            );
+            panic!("SEGFAULT");
+        }
     }
 }
 
