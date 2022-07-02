@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+use core::arch::asm;
+
 use crate::{kprint, kprint_color, vga::Color};
 
 #[cfg(not(feature = "checks-mode"))]
@@ -9,7 +11,7 @@ pub fn run() {
     kprint_color!(Color::Green, "Starting checks... \n");
 
     check_vga();
-    check_panics();
+    check_interrupts();
 }
 
 pub fn check_vga() {
@@ -34,4 +36,12 @@ fn check_panics() {
     );
     let x: Option<i32> = None;
     x.unwrap();
+}
+
+fn check_interrupts() {
+    divide_by_zero()
+}
+
+fn divide_by_zero() {
+    unsafe { asm!("mov dx, 0; div dx") }
 }

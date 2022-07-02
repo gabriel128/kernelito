@@ -14,15 +14,20 @@ pub fn init() {
     IDT.load_idt();
 }
 
-extern "C" fn divide_by_zero() -> ! {
-    kprint!("what");
-    loop {}
+fn divide_by_zero() {
+    unsafe { asm!("mov dx, 0; div dx") }
 }
-pub type Handler = extern "C" fn() -> !;
+
+fn divide_by_zero_handler() {
+    panic!("Division by zero macho");
+}
+
+pub type Handler = fn();
 
 pub struct Idt([IdtDescriptor; TOTAL_INTERRUPTS]);
 
 impl Idt {
+    #[inline(always)]
     fn new() -> Self {
         let mut idt = Self([IdtDescriptor::null(); TOTAL_INTERRUPTS]);
         idt.config_handlers();
@@ -42,9 +47,10 @@ impl Idt {
 
     #[inline(always)]
     fn config_handlers(&mut self) {
-        self.set_interrupt_handler(1, divide_by_zero)
+        self.set_interrupt_handler(0, divide_by_zero_handler)
     }
 
+    #[inline(always)]
     fn set_interrupt_handler(&mut self, interrupt_num: u16, handler: Handler) {
         self.0[interrupt_num as usize] = IdtDescriptor::new(handler);
     }
@@ -96,19 +102,18 @@ impl IdtDescriptor {
 
     #[inline(always)]
     pub fn new(handler: Handler) -> Self {
-        let handler_ptr = handler as u32;
-        // let type_attributes: u8 = TypeAttrs::new(true, Dpl::Ring0, GateType::InterruptGate).into();
+        let handler_addr = handler as u32;
+        let type_attributes: u8 = TypeAttrs::new(true, Dpl::Ring0, GateType::InterruptGate).into();
 
-        // Should be 0x8E
-        // assert_eq!(type_attributes, 0x8E);
+        assert_eq!(type_attributes, 0x8E);
 
         Self {
-            offset_1: handler_ptr as u16,
+            offset_1: handler_addr as u16,
             // TODO: Extract to a constant CODE_SEG, create DATA_SEG 0x10 as well
             selector: 0x08,
             zero: 0,
-            type_attributes: 0x8E,
-            offset_2: (handler_ptr >> 16) as u16,
+            offset_2: (handler_addr >> 16) as u16,
+            type_attributes,
         }
     }
 }

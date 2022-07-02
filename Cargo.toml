@@ -25,7 +25,7 @@ debug = true
 debug-assertions = false
 
 lto = true
-codegen-units = 2
+# codegen-units = 3
 
 incremental = false
 overflow-checks = false
