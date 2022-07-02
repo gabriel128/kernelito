@@ -1,10 +1,14 @@
 #![no_std]
+#![feature(abi_x86_interrupt)]
 #![no_main]
 #![feature(lang_items)]
 #![feature(panic_info_message)]
 
-mod checks;
+#[macro_use]
 mod vga;
+
+mod checks;
+mod idt;
 
 use core::{arch::asm, panic::PanicInfo};
 
@@ -17,12 +21,13 @@ pub extern "C" fn _start() -> ! {
     print_ok_loading_message("Bootlader");
     print_ok_loading_message("VGA Driver");
 
-    checks::run();
+    // checks::run();
 
     kprintln!("kernelito>");
 
+    idt::init();
     loop {
-        halt();
+        halt()
     }
 }
 

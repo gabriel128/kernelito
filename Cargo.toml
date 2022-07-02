@@ -33,7 +33,7 @@ opt-level = 2
 
 [dependencies]
 ufmt = "0.1.0"
-# lazy_static = {version = "1.4", features= ["spin_no_std"]}
+lazy_static = {version = "1.4", features= ["spin_no_std"]}
 # spin = "0.5.2"
 
 [features]
