@@ -50,6 +50,7 @@ imports_real_mode:
 
 after_pmode_switch:
     mov eax, 1
+    ;; Should load a 130K kernel
     mov ecx, 255
     mov edi, KERNEL_OFFSET
     call ata_lba_read
