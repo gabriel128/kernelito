@@ -19,13 +19,12 @@ panic = "abort"
 
 ## To super optiomizing stip kernel
 # lto = true
-
 # incremental = false
-overflow-checks = false
-opt-level = 3
+# overflow-checks = false
+
+opt-level = "z"
 
 [dependencies]
-ufmt = "0.1.0"
 lazy_static = {version = "1.4", features= ["spin_no_std"]}
 # spin = "0.5.2"
 

@@ -1,11 +1,7 @@
 #![allow(dead_code)]
-use core::{
-    convert::Infallible,
-    sync::atomic::{AtomicU32, Ordering},
-};
+use core::sync::atomic::{AtomicU32, Ordering};
 
 pub mod utils;
-use ufmt::uWrite;
 #[macro_use]
 pub mod macros;
 
@@ -90,10 +86,8 @@ pub struct VgaDriver {
     char_color: Color,
 }
 
-impl uWrite for VgaDriver {
-    type Error = Infallible;
-
-    fn write_str(&mut self, s: &str) -> Result<(), Self::Error> {
+impl core::fmt::Write for VgaDriver {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
         self.print(s);
         Ok(())
     }
