@@ -18,17 +18,13 @@
 ;;; AL as the quantity of sectors to read
 ;;; BX where to put the data in memory
 load_kernel:
-    mov si, LOADING_MESSAGE
-    call rm_print_string
-
     mov ah, 0x2
     mov ch, 0
-    mov dh, 0
     int 0x13
     jc error
 
-    mov si, FINISHED_LOADING_MESSAGE
-    call rm_print_string
+    xor ah, ah      ; reset disk system (int 0x13, ah = 0x00)
+    int 0x13
     ret
 
 error:
@@ -37,5 +33,5 @@ error:
     jmp $
 
 ERROR_MESSAGE:  db "Failed to load sector ", 0
-LOADING_MESSAGE:  db "> Loading kernel ", 0
-FINISHED_LOADING_MESSAGE:  db "> Finished Loading kernel ", 0
+LOADING_MESSAGE:  db "> Loading kernel ", 0xa, 0xd, 0
+FINISHED_LOADING_MESSAGE:  db "> Finished Loading kernel ", 0xa, 0xd, 0

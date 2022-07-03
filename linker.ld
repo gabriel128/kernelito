@@ -8,7 +8,7 @@ SECTIONS
         *(.boot.*);
     }
 
-    . = 1M;
+    . = 0x7e00;
     .text : ALIGN(4K)
     {
         *(.text)

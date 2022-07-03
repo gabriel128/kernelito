@@ -11,7 +11,6 @@ crate-type = ["staticlib"]
 # overflow-checks = false
 
 [profile.dev]
-strip = false
 panic = "abort"
 # opt-level = "z"
 lto = "fat"
@@ -21,11 +20,13 @@ overflow-checks = false
 
 [profile.release]
 panic = "abort"
-debug = true
-debug-assertions = false
+# debug = true
+# debug-assertions = false
+
+## Doesn't work with less than 3
+# codegen-units = 1
 
 lto = true
-# codegen-units = 3
 
 incremental = false
 overflow-checks = false

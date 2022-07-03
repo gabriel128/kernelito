@@ -14,10 +14,6 @@ pub fn init() {
     IDT.load_idt();
 }
 
-fn divide_by_zero() {
-    unsafe { asm!("mov dx, 0; div dx") }
-}
-
 fn divide_by_zero_handler() {
     panic!("Division by zero macho");
 }
