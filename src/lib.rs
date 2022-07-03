@@ -48,14 +48,14 @@ fn panic(panic_info: &PanicInfo) -> ! {
         let panic_message = args.as_str().unwrap_or("");
 
         kprinterror!(
-            "Panic occurred: {} in {}:{}:{}",
+            "KERNEL PANIC! {} in {}:{}:{}",
             panic_message,
             location.file(),
             location.line(),
             location.column(),
         );
     } else {
-        kprinterror!("Panic: Unknown ERROR");
+        kprinterror!("KERNEL PANIC! Unknown ERROR");
     }
 
     loop {

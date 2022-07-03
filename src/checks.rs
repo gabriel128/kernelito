@@ -12,6 +12,7 @@ pub fn run() {
 
     check_vga();
     check_interrupts();
+    // check_panics();
 }
 
 pub fn check_vga() {
