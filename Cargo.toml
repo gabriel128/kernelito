@@ -7,30 +7,22 @@ edition = "2021"
 [lib]
 crate-type = ["staticlib"]
 
-# [profile.dev.package.compiler_builtins]
-# overflow-checks = false
-
 [profile.dev]
 panic = "abort"
-# opt-level = "z"
-lto = "fat"
-overflow-checks = false
-# opt-level = 1
-# codegen-units = 1
+opt-level = "s"
+# overflow-checks = false
 
 [profile.release]
 panic = "abort"
 # debug = true
 # debug-assertions = false
 
-## Doesn't work with less than 3
-# codegen-units = 1
+## To super optiomizing stip kernel
+# lto = true
 
-lto = true
-
-incremental = false
+# incremental = false
 overflow-checks = false
-opt-level = 2
+opt-level = 3
 
 [dependencies]
 ufmt = "0.1.0"
