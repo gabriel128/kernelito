@@ -21,7 +21,7 @@ pub fn check_vga() {
         Color::Green,
         "\n============== Starting VGA checks ==============\n"
     );
-    for _ in 0..(81 * 10) {
+    for _ in 0..(80 * 10) {
         kprint!("X");
     }
 

@@ -184,7 +184,6 @@ mod tests {
     fn test_typeattrs() {
         let type_attributes: u8 = TypeAttrs::new(true, Dpl::Ring0, GateType::InterruptGate).into();
 
-        x.unwrap();
         assert_eq!(type_attributes, 0x8E);
     }
 }

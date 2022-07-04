@@ -68,4 +68,4 @@ gdb: build
 		-ex 'layout src'
 
 test:
-	cargo +stable test --target=x86_64-unknown-linux-gnu -- --nocapture
+	cargo +stable watch -x "test --target=i686-unknown-linux-gnu -- --color=always --nocapture --test-threads=1"
