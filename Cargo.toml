@@ -23,7 +23,7 @@ panic = "abort"
 # overflow-checks = false
 
 ## Optimize for size
-opt-level = "z"
+# opt-level = "z"
 
 [dependencies]
 lazy_static = {version = "1.4", features= ["spin_no_std"]}
@@ -32,3 +32,4 @@ lazy_static = {version = "1.4", features= ["spin_no_std"]}
 [features]
 default = []
 checks-mode = []
+

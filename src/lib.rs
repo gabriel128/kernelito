@@ -1,8 +1,7 @@
-#![no_std]
-#![feature(abi_x86_interrupt)]
-#![no_main]
-#![feature(lang_items)]
-#![feature(panic_info_message)]
+#![cfg_attr(not(test), no_std)]
+#![cfg_attr(not(test), no_main)]
+#![cfg_attr(not(test), feature(panic_info_message))]
+#![cfg_attr(test, allow(unused_imports))]
 
 #[macro_use]
 mod vga;
@@ -15,10 +14,13 @@ use core::{arch::asm, panic::PanicInfo};
 use vga::utils::print_ok_loading_message;
 
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn kmain() -> ! {
     idt::init();
 
     welcome_msg();
+
+    // #[cfg(test)]
+    // test_main();
 
     print_ok_loading_message("Bootlader");
     print_ok_loading_message("VGA Driver");
@@ -42,10 +44,11 @@ fn welcome_msg() {
     kprintln!("");
 }
 
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(panic_info: &PanicInfo) -> ! {
     if let (Some(args), Some(location)) = (panic_info.message(), panic_info.location()) {
-        let panic_message = args.as_str().unwrap_or("");
+        let panic_message = args.as_str().unwrap_or("Unknown Error");
 
         kprinterror!(
             "KERNEL PANIC! {} in {}:{}:{}",
@@ -68,6 +71,3 @@ fn halt() {
         asm!("hlt");
     }
 }
-
-#[lang = "eh_personality"]
-extern "C" fn eh_personality() {}

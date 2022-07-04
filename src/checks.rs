@@ -11,8 +11,9 @@ pub fn run() {
     kprint_color!(Color::Green, "Starting checks... \n");
 
     check_vga();
-    check_interrupts();
-    // check_panics();
+    // check_interrupts();
+    // check_opt_panics();
+    check_res_panics();
 }
 
 pub fn check_vga() {
@@ -30,12 +31,21 @@ pub fn check_vga() {
     );
 }
 
-fn check_panics() {
+fn check_opt_panics() {
     kprint_color!(
         Color::Green,
         "\n============== Starting panic checks ==============\n"
     );
     let x: Option<i32> = None;
+    x.unwrap();
+}
+
+fn check_res_panics() {
+    kprint_color!(
+        Color::Green,
+        "\n============== Starting Result panic checks ==============\n"
+    );
+    let x: Result<i32, i32> = Err(0);
     x.unwrap();
 }
 

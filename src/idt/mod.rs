@@ -101,8 +101,6 @@ impl IdtDescriptor {
         let handler_addr = handler as u32;
         let type_attributes: u8 = TypeAttrs::new(true, Dpl::Ring0, GateType::InterruptGate).into();
 
-        assert_eq!(type_attributes, 0x8E);
-
         Self {
             offset_1: handler_addr as u16,
             // TODO: Extract to a constant CODE_SEG, create DATA_SEG 0x10 as well
@@ -175,5 +173,18 @@ impl From<Dpl> for u8 {
             Dpl::Ring0 => 0b0000_0000,
             Dpl::Ring3 => 0b0110_0000,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::idt::*;
+
+    #[test]
+    fn test_typeattrs() {
+        let type_attributes: u8 = TypeAttrs::new(true, Dpl::Ring0, GateType::InterruptGate).into();
+
+        x.unwrap();
+        assert_eq!(type_attributes, 0x8E);
     }
 }

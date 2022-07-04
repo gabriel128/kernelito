@@ -6,6 +6,7 @@ pub mod utils;
 pub mod macros;
 
 static VGA_MEMORY_ADDR: u32 = 0xb8000;
+
 const WIDTH: u32 = 80;
 const HEIGHT: u32 = 25;
 
@@ -84,6 +85,7 @@ impl Into<u16> for ScreenChar {
 #[derive(Debug, Clone)]
 pub struct VgaDriver {
     char_color: Color,
+    vga_mem_addr: u32,
 }
 
 impl core::fmt::Write for VgaDriver {
@@ -95,7 +97,17 @@ impl core::fmt::Write for VgaDriver {
 
 impl VgaDriver {
     pub fn new(char_color: Color) -> Self {
-        Self { char_color }
+        Self {
+            char_color,
+            vga_mem_addr: VGA_MEMORY_ADDR,
+        }
+    }
+
+    pub fn new_with_addr(char_color: Color, vga_mem_addr: u32) -> Self {
+        Self {
+            char_color,
+            vga_mem_addr,
+        }
     }
 
     #[inline(always)]
@@ -186,7 +198,7 @@ impl VgaDriver {
         let translated_y: u32 = (2 * y * WIDTH).into();
         let translated_x: u32 = (2 * x).into();
 
-        VGA_MEMORY_ADDR + translated_x + translated_y
+        self.vga_mem_addr + translated_x + translated_y
     }
 
     fn move_cursor_right(&self) {
@@ -214,7 +226,7 @@ impl VgaDriver {
         // Safety: It shouldn never reach an invalid memory. Protected
         // by the conditionals above
         unsafe {
-            core::ptr::write_volatile((mem_addr as *mut u16).offset(0 as isize), screen_char);
+            core::ptr::write_volatile(mem_addr as *mut u16, screen_char);
         }
     }
 
@@ -230,7 +242,7 @@ impl VgaDriver {
     // 4000 = 80*25*2 = WIDTH * HEIGHT * 1pixel(2 bytes)
     // VGA_ADDR + 4000 = 0xB8FA0
     fn assert_vga_memory(&self, mem_addr: u32) {
-        if mem_addr < VGA_MEMORY_ADDR || mem_addr > (VGA_MEMORY_ADDR + 4000) {
+        if mem_addr < self.vga_mem_addr || mem_addr > (self.vga_mem_addr + 4000) {
             kprinterror!(
                 "[VGA Error] Trying to access wrong memory {:#?} \n",
                 mem_addr as *const u8
@@ -250,3 +262,19 @@ pub fn test_print() {
         *vga_buffer.offset(1 as isize) = 0x4;
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use crate::vga::*;
+
+//     #[test]
+//     fn test_vga() {
+//         unsafe {
+//             let vga =
+//                 VgaDriver::new_with_addr(Color::Red, (&VGA_MEMORY_TEST_ADDR as *const u16) as u32);
+
+//             vga.print("blallbaasd");
+//             assert_eq!(VGA_MEMORY_TEST_ADDR[0], 0);
+//         };
+//     }
+// }

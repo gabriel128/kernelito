@@ -14,10 +14,10 @@ rustflags = [
   # See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
 
   # "-C", "link-arg=--nmagic",
-  # "-C", "relocation-model=static",
+  "-C", "relocation-model=static",
+  # "-C", "link-arg=-Tlinker.ld",
   # "-C", "link-arg=-melf_i386",
   # "-C", "link-arg=--gc-sections",
   # "-C", "link-arg=-Wl",
   # "-C", "link-arg=-nostartfiles",
-  # "-C", "link-arg=-Tlinker.ld",
 ]

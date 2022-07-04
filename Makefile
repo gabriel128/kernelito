@@ -1,6 +1,5 @@
 FEATURES ?= default
 
-
 all: build run
 
 build: clean
@@ -40,9 +39,7 @@ debug-run: build-debug
 	make run
 
 run:
-	# qemu-system-x86_64 -drive format=raw,file=bin/kernel.img display sdl -vga none -device virtio-vga,xres=800,yres=600
 	qemu-system-x86_64 -no-reboot -drive format=raw,file=bin/kernel.img
-	# qemu-system-x86_64 -no-reboot -hda bin/kernel.img
 	# qemu-system-i386 -hda ./bin/kernel.img
 
 # DEPRECATED
@@ -57,14 +54,18 @@ run:
 
 vb: build
 	VBoxManage convertfromraw bin/kernel.img bin/kernelito.vdi --format VDI
+
 clean:
 	rm -rf build/*
 	rm -rf bin/*
 
-debug: build
+gdb: build
 	gdb -ex 'target remote | qemu-system-i386 -hda ./bin/kernel.img -S -gdb stdio' \
         -ex 'set architecture i386' \
         -ex 'add-symbol-file ./symbols' \
 		-ex 'hbreak *0x100000' \
 		-ex 'continue' \
 		-ex 'layout src'
+
+test:
+	cargo +stable test --target=x86_64-unknown-linux-gnu -- --nocapture
