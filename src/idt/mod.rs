@@ -1,7 +1,11 @@
 #![allow(dead_code)]
-use core::arch::asm;
 
+mod handlers;
+
+use core::arch::asm;
 use lazy_static::lazy_static;
+
+use self::handlers::{Handler, HandlerFn};
 
 const TOTAL_INTERRUPTS: usize = 16;
 
@@ -13,12 +17,6 @@ lazy_static! {
 pub fn init() {
     IDT.load_idt();
 }
-
-fn divide_by_zero_handler() {
-    panic!("Division by zero macho");
-}
-
-pub type Handler = fn();
 
 pub struct Idt([IdtDescriptor; TOTAL_INTERRUPTS]);
 
@@ -43,12 +41,14 @@ impl Idt {
 
     #[inline(always)]
     fn config_handlers(&mut self) {
-        self.set_interrupt_handler(0, divide_by_zero_handler)
+        for handler in handlers::all() {
+            self.set_interrupt_handler(handler);
+        }
     }
 
     #[inline(always)]
-    fn set_interrupt_handler(&mut self, interrupt_num: u16, handler: Handler) {
-        self.0[interrupt_num as usize] = IdtDescriptor::new(handler);
+    fn set_interrupt_handler(&mut self, handler: Handler) {
+        self.0[handler.interrupt_num as usize] = IdtDescriptor::new(handler.handler_fn);
     }
 }
 
@@ -97,7 +97,7 @@ impl IdtDescriptor {
     }
 
     #[inline(always)]
-    pub fn new(handler: Handler) -> Self {
+    pub fn new(handler: HandlerFn) -> Self {
         let handler_addr = handler as u32;
         let type_attributes: u8 = TypeAttrs::new(true, Dpl::Ring0, GateType::InterruptGate).into();
 

@@ -19,9 +19,6 @@ pub extern "C" fn kmain() -> ! {
 
     welcome_msg();
 
-    // #[cfg(test)]
-    // test_main();
-
     print_ok_loading_message("Bootlader");
     print_ok_loading_message("VGA Driver");
 

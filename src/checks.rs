@@ -11,9 +11,9 @@ pub fn run() {
     kprint_color!(Color::Green, "Starting checks... \n");
 
     check_vga();
-    // check_interrupts();
+    check_interrupts();
     // check_opt_panics();
-    check_res_panics();
+    // check_res_panics();
 }
 
 pub fn check_vga() {
@@ -50,9 +50,17 @@ fn check_res_panics() {
 }
 
 fn check_interrupts() {
-    divide_by_zero()
+    double_fault();
+    // divide_by_zero();
 }
 
 fn divide_by_zero() {
     unsafe { asm!("mov dx, 0; div dx") }
+}
+
+fn double_fault() {
+    unsafe {
+        // asm!("int 8");
+        *(0xdeadbeef as *mut u32) = 42;
+    };
 }

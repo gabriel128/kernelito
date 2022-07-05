@@ -16,7 +16,7 @@ build: clean
 	ls -sh ./bin/kernel.bin
 	ls -sh ./bin/kernel.img
 
-check-run:
+run-checks:
 	FEATURES="checks-mode" make
 
 
