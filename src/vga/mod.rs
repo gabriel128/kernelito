@@ -258,6 +258,7 @@ pub fn test_print() {
 #[cfg(test)]
 mod tests {
     use crate::vga::*;
+    use std::boxed::Box;
 
     #[test]
     fn writes_a_red_char_at_the_bottom_of_the_screen() {

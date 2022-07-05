@@ -60,7 +60,6 @@ fn divide_by_zero() {
 
 fn double_fault() {
     unsafe {
-        // asm!("int 8");
-        *(0xdeadbeef as *mut u32) = 42;
+        asm!("int 8");
     };
 }

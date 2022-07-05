@@ -1,7 +1,12 @@
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 #![cfg_attr(not(test), no_main)]
 #![cfg_attr(not(test), feature(panic_info_message))]
 #![cfg_attr(test, allow(unused_imports))]
+
+// Adding std manually so rust-analyzer don't freek out
+#[cfg(test)]
+#[macro_use]
+extern crate std;
 
 #[macro_use]
 mod vga;
