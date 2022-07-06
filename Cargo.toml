@@ -7,35 +7,29 @@ edition = "2021"
 [lib]
 crate-type = ["staticlib"]
 
-# [profile.dev.package.compiler_builtins]
-# overflow-checks = false
-
 [profile.dev]
-strip = false
 panic = "abort"
-# opt-level = "z"
-lto = "fat"
-overflow-checks = false
-# opt-level = 1
-# codegen-units = 1
+opt-level = "s"
+# overflow-checks = false
 
 [profile.release]
 panic = "abort"
-debug = true
-debug-assertions = false
+# debug = true
+# debug-assertions = false
 
-lto = true
-codegen-units = 2
+## To super optiomizing stip kernel
+# lto = true
+# incremental = false
+# overflow-checks = false
 
-incremental = false
-overflow-checks = false
-opt-level = 2
+## Optimize for size
+# opt-level = "z"
 
 [dependencies]
-ufmt = "0.1.0"
-# lazy_static = {version = "1.4", features= ["spin_no_std"]}
+lazy_static = {version = "1.4", features= ["spin_no_std"]}
 # spin = "0.5.2"
 
 [features]
 default = []
 checks-mode = []
+
