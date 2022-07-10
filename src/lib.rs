@@ -23,18 +23,19 @@ use vga::utils::print_ok_loading_message;
 
 #[no_mangle]
 pub extern "C" fn kmain() -> ! {
-    idt::init();
-    pic::init();
-    idt::enable_interrupts();
-
     welcome_msg();
 
     print_ok_loading_message("Bootlader");
     print_ok_loading_message("VGA Driver");
 
+    idt::init();
+    pic::init();
+
     checks::run();
 
     kprintln!("kernelito>");
+
+    idt::enable_interrupts();
 
     loop {
         halt()

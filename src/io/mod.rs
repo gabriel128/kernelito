@@ -1,56 +1,89 @@
 #![allow(dead_code)]
 use core::arch::asm;
 
+/// Making the Port interface safe given that we don't
+/// allow arbitrary port numbers
+
+/// Port8 represents a port that transmits 8 bits
 #[derive(Debug)]
-pub struct Port {
-    port: u16,
+pub enum Port8 {
+    Pic1Cmd,
+    Pic1Data,
 }
 
-impl Port {
-    pub fn new(port: u16) -> Self {
-        Self { port }
+impl From<&Port8> for u16 {
+    fn from(port: &Port8) -> Self {
+        match port {
+            Port8::Pic1Cmd => 0x20,
+            Port8::Pic1Data => 0x21,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Port16 {}
+
+impl From<&Port16> for u16 {
+    fn from(_port: &Port16) -> Self {
+        unimplemented!()
+    }
+}
+
+impl Port8 {
+    pub fn write_byte(&self, val: u8) {
+        let port: u16 = self.into();
+        unsafe {
+            asm!(
+                "out dx, al",
+                in("dx") port,
+                in("al") val,
+                options(nostack),
+            );
+        }
     }
 
-    pub unsafe fn write_byte(&self, val: u8) {
-        asm!(
-            "out dx, al",
-            in("dx") self.port,
-            in("al") val,
-            options(nostack),
-        );
-    }
-
-    pub unsafe fn read_byte(&self) -> u8 {
+    pub fn read_byte(&self) -> u8 {
         let val: u8;
+        let port: u16 = self.into();
 
-        asm!(
-            "in al, dx",
-            in("dx") self.port,
-            out("al") val,
-            options(nostack),
-        );
+        unsafe {
+            asm!(
+                "in al, dx",
+                in("dx") port,
+                out("al") val,
+                options(nostack),
+            );
+        }
 
         val
     }
+}
 
-    pub unsafe fn write_word(&self, val: u16) {
-        asm!(
-            "out dx, al",
-            in("dx") self.port,
-            in("ax") val,
-            options(nostack),
-        );
+impl Port16 {
+    pub fn write_word(&self, val: u16) {
+        let port: u16 = self.into();
+        unsafe {
+            asm!(
+                "out dx, al",
+                in("dx") port,
+                in("ax") val,
+                options(nostack),
+            );
+        }
     }
 
-    pub unsafe fn read_word(&self) -> u16 {
+    pub fn read_word(&self) -> u16 {
         let val: u16;
+        let port: u16 = self.into();
 
-        asm!(
-            "in al, dx",
-            in("dx") self.port,
-            out("ax") val,
-            options(nostack),
-        );
+        unsafe {
+            asm!(
+                "in al, dx",
+                in("dx") port,
+                out("ax") val,
+                options(nostack),
+            );
+        }
 
         val
     }
