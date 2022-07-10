@@ -13,6 +13,7 @@ mod vga;
 
 mod checks;
 mod idt;
+mod io;
 
 use core::{arch::asm, panic::PanicInfo};
 

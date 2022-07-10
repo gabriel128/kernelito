@@ -24,25 +24,27 @@ impl Handler {
 
 pub fn all() -> [Handler; 4] {
     [
-        Handler::new(DIVIDE_BY_ZERO_VNO, divide_by_zero),
-        Handler::new(DOUBLE_FAULT_VNO, double_fault),
-        Handler::new(GENERAL_PROTECTION_FAULT_VNO, general_protection),
-        Handler::new(PAGE_FAULT_VNO, page_fault),
+        Handler::new(DIVIDE_BY_ZERO_VNO, exceptions::divide_by_zero),
+        Handler::new(DOUBLE_FAULT_VNO, exceptions::double_fault),
+        Handler::new(GENERAL_PROTECTION_FAULT_VNO, exceptions::general_protection),
+        Handler::new(PAGE_FAULT_VNO, exceptions::page_fault),
     ]
 }
 
-pub fn divide_by_zero() {
-    panic!("Exeception! Division by zero macho");
-}
+mod exceptions {
+    pub fn divide_by_zero() {
+        panic!("Exeception! Division by zero macho");
+    }
 
-pub fn general_protection() {
-    panic!("Exeception! General Protection");
-}
+    pub fn general_protection() {
+        panic!("Exeception! General Protection");
+    }
 
-pub fn double_fault() {
-    panic!("Exeception! Double fault");
-}
+    pub fn double_fault() {
+        panic!("Exeception! Double fault");
+    }
 
-pub fn page_fault() {
-    panic!("Exeception! Page fault");
+    pub fn page_fault() {
+        panic!("Exeception! Page fault");
+    }
 }

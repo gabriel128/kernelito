@@ -7,7 +7,7 @@ use lazy_static::lazy_static;
 
 use self::handlers::{Handler, HandlerFn};
 
-const TOTAL_INTERRUPTS: usize = 16;
+const TOTAL_INTERRUPTS: usize = 64;
 
 lazy_static! {
     static ref IDT: Idt = Idt::new();
