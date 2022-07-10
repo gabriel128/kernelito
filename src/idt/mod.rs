@@ -9,6 +9,8 @@ use self::handlers::{Handler, HandlerFn};
 
 const TOTAL_INTERRUPTS: usize = 64;
 
+pub const IRQ_OFFSET: u8 = 32;
+
 lazy_static! {
     static ref IDT: Idt = Idt::new();
 }
@@ -16,6 +18,13 @@ lazy_static! {
 #[inline(always)]
 pub fn init() {
     IDT.load_idt();
+}
+
+#[inline(always)]
+pub fn enable_interrupts() {
+    unsafe {
+        asm!("sti");
+    }
 }
 
 pub struct Idt([IdtDescriptor; TOTAL_INTERRUPTS]);
