@@ -9,6 +9,7 @@ use core::arch::asm;
 pub enum Port8 {
     Pic1Cmd,
     Pic1Data,
+    KeybData,
 }
 
 impl From<&Port8> for u16 {
@@ -16,6 +17,7 @@ impl From<&Port8> for u16 {
         match port {
             Port8::Pic1Cmd => 0x20,
             Port8::Pic1Data => 0x21,
+            Port8::KeybData => 0x60,
         }
     }
 }

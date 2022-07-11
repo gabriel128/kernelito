@@ -54,7 +54,7 @@ mod exceptions {
 }
 
 mod irq {
-    use crate::pic;
+    use crate::{io::Port8, pic};
 
     pub extern "x86-interrupt" fn timer() {
         #[cfg(feature = "checks-mode")]
@@ -64,7 +64,11 @@ mod irq {
     }
 
     pub extern "x86-interrupt" fn keyboard_press() {
-        kprintln!("keyboard pressed");
+        #[cfg(feature = "checks-mode")]
+        {
+            let scan_code = Port8::KeybData.read_byte();
+            kprint!("Keyboard pressed, Scan code {}", scan_code);
+        }
 
         pic::end_of_interrupt();
     }
