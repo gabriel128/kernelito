@@ -1,13 +1,15 @@
 // Full reference https://wiki.osdev.org/Exceptions
 
-pub type HandlerFn = fn();
+pub type HandlerFn = extern "x86-interrupt" fn();
 
 const DIVIDE_BY_ZERO_VNO: u16 = 0;
 const DOUBLE_FAULT_VNO: u16 = 8;
 const GENERAL_PROTECTION_FAULT_VNO: u16 = 13;
 const PAGE_FAULT_VNO: u16 = 14;
+const TIMER_IRQ_NO: u16 = 32;
+const KYBD_IRQ_NO: u16 = 33;
 
-#[derive(Debug)]
+// #[derive(Debug)]
 pub struct Handler {
     pub interrupt_num: u16,
     pub handler_fn: HandlerFn,
@@ -22,27 +24,52 @@ impl Handler {
     }
 }
 
-pub fn all() -> [Handler; 4] {
+pub fn all() -> [Handler; 6] {
     [
-        Handler::new(DIVIDE_BY_ZERO_VNO, divide_by_zero),
-        Handler::new(DOUBLE_FAULT_VNO, double_fault),
-        Handler::new(GENERAL_PROTECTION_FAULT_VNO, general_protection),
-        Handler::new(PAGE_FAULT_VNO, page_fault),
+        Handler::new(DIVIDE_BY_ZERO_VNO, exceptions::divide_by_zero),
+        Handler::new(DOUBLE_FAULT_VNO, exceptions::double_fault),
+        Handler::new(GENERAL_PROTECTION_FAULT_VNO, exceptions::general_protection),
+        Handler::new(PAGE_FAULT_VNO, exceptions::page_fault),
+        Handler::new(TIMER_IRQ_NO, irq::timer),
+        Handler::new(KYBD_IRQ_NO, irq::keyboard_press),
     ]
 }
 
-pub fn divide_by_zero() {
-    panic!("Exeception! Division by zero macho");
+mod exceptions {
+    pub extern "x86-interrupt" fn divide_by_zero() {
+        panic!("Exeception! Division by zero macho");
+    }
+
+    pub extern "x86-interrupt" fn general_protection() {
+        panic!("Exeception! General Protection");
+    }
+
+    pub extern "x86-interrupt" fn double_fault() {
+        panic!("Exeception! Double fault");
+    }
+
+    pub extern "x86-interrupt" fn page_fault() {
+        panic!("Exeception! Page fault");
+    }
 }
 
-pub fn general_protection() {
-    panic!("Exeception! General Protection");
-}
+mod irq {
+    use crate::{io::Port8, pic};
 
-pub fn double_fault() {
-    panic!("Exeception! Double fault");
-}
+    pub extern "x86-interrupt" fn timer() {
+        #[cfg(feature = "checks-mode")]
+        kprint!(".");
 
-pub fn page_fault() {
-    panic!("Exeception! Page fault");
+        pic::end_of_interrupt();
+    }
+
+    pub extern "x86-interrupt" fn keyboard_press() {
+        #[cfg(feature = "checks-mode")]
+        {
+            let scan_code = Port8::KeybData.read_byte();
+            kprint!("Keyboard pressed, Scan code {}", scan_code);
+        }
+
+        pic::end_of_interrupt();
+    }
 }

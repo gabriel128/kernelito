@@ -11,7 +11,7 @@ pub fn run() {
     kprint_color!(Color::Green, "Starting checks... \n");
 
     check_vga();
-    check_interrupts();
+    // check_interrupts();
     // check_opt_panics();
     // check_res_panics();
 }
