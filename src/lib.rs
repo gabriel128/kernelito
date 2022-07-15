@@ -29,13 +29,20 @@ pub extern "C" fn kmain() -> ! {
     print_ok_loading_message("VGA Driver");
 
     idt::init();
+
+    print_ok_loading_message("IDT");
+
     pic::init();
+
+    print_ok_loading_message("PIC");
 
     checks::run();
 
-    kprintln!("kernelito>");
-
     idt::enable_interrupts();
+
+    print_ok_loading_message("Interrupts Enabled");
+
+    kprintln!("kernelito>");
 
     loop {
         halt()
@@ -44,7 +51,8 @@ pub extern "C" fn kmain() -> ! {
 
 fn welcome_msg() {
     kprintln!("");
-    kprintln!("||  //        ==    ========   =====");
+    kprintln!("              []");
+    kprintln!("||  //              ========   =====");
     kprintln!("|| //         ||       ||     ||   ||");
     kprintln!("||       ==   ||       ||     ||   ||");
     kprintln!("|| \\\\         ||       ||     ||   ||");

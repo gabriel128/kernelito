@@ -1,11 +1,13 @@
 # Kernelito
 
-WIP kernel (most likely a micro kernel)
+WIP kernel (most likely will endaup as a micro kernel)
 
 # Current State
 - 2 stage x86 handmade Bootloader 
 - 32 bits in protected mode
 - Vga driver 
+- Basic IDT (only panics for now)
+- HW interrupts
 - Cool presentation screen
 
 

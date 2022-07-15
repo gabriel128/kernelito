@@ -54,7 +54,7 @@ mod exceptions {
 }
 
 mod irq {
-    use crate::{io::Port8, pic};
+    use crate::pic;
 
     pub extern "x86-interrupt" fn timer() {
         #[cfg(feature = "checks-mode")]
