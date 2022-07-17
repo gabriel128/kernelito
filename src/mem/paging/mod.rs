@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 use core::arch::asm;
 
+use crate::errors::{KernelError, KernelErrorKind};
+
 mod attr {
     // If the bit is set, the page will not be cached. Otherwise, it will be.
     pub const CACHE_DISABLED: u32 = 0b0001_0000;
@@ -50,56 +52,42 @@ impl Default for PageTableEntry {
     }
 }
 impl PageDirectoryEntry {
-    fn new_with_flags(addr: u32, flags: u32) -> Self {
+    fn new_with_flags(addr: u32, flags: u32) -> crate::Result<Self> {
         if (addr % PAGE_SIZE) != 0 {
-            panic!("PDE addres is not 4KB aligned, addr: {}", addr);
+            return KernelError::lifted(
+                "PDE addres is not 4KB aligned",
+                KernelErrorKind::MemError(addr),
+            );
         }
 
-        Self(addr | flags)
+        Ok(Self(addr | flags))
     }
 }
 impl PageTableEntry {
-    fn new_with_flags(addr: u32, flags: u32) -> Self {
+    fn new_with_flags(addr: u32, flags: u32) -> crate::Result<Self> {
         if (addr % PAGE_SIZE) != 0 {
-            panic!("Page table entry addres is not 4KB aligned, addr: {}", addr);
+            return KernelError::lifted(
+                "PTE addres is not 4KB aligned",
+                KernelErrorKind::MemError(addr),
+            );
         }
 
-        Self(addr | flags)
+        Ok(Self(addr | flags))
     }
 }
 
 impl PageDirectory {
-    fn new_for_kernel() -> Self {
+    fn new_for_kernel() -> crate::Result<Self> {
         let mut entries = [PageDirectoryEntry::default(); PAGE_ENTRIES_QTY];
         let flags = attr::WRITABLE | attr::USER_ACCESS_ENABLED | attr::PRESENT;
 
-        // let kernel_code_addr = (&KERNEL_CODE_PAGE_TABLE as *const _) as u32;
+        entries[0] = PageDirectoryEntry::new_with_flags(KERNEL_CODE_ADDR, flags)?;
 
-        // kprintln!(
-        //     "Leading PDE code addr at {} with flags, {:08b}",
-        //     &kernel_code_addr,
-        //     flags
-        // );
-
-        entries[0] = PageDirectoryEntry::new_with_flags(KERNEL_CODE_ADDR, flags);
-
-        Self { entries }
+        Ok(Self { entries })
     }
-
-    // pub fn load_to_cr3(&'static self) {
-    //     let directory_addr = self as *const _ as u32;
-
-    //     kprintln!("Leading Directory at {:p}", &directory_addr);
-
-    //     unsafe {
-    //         asm!("mov cr3, {}", in(reg) &directory_addr);
-    //     }
-    // }
 
     pub fn load_to_cr3() {
         let directory_addr = KERNEL_PAGE_DIRECTORY_ADDR;
-
-        // kprintln!("Leading Directory at {:p}", &directory_addr);
 
         unsafe {
             asm!("mov cr3, {}", in(reg) directory_addr);
@@ -116,34 +104,38 @@ impl PageDirectory {
 }
 
 impl PageTable {
-    fn new_for_kernel() -> Self {
+    fn new_for_kernel() -> crate::Result<Self> {
         let mut entries = [PageTableEntry::default(); PAGE_ENTRIES_QTY];
         // identity mapped
         for (i, entry) in entries.iter_mut().enumerate() {
             let flags = attr::WRITABLE | attr::USER_ACCESS_ENABLED | attr::PRESENT;
-            *entry = PageTableEntry::new_with_flags((i as u32) * PAGE_SIZE, flags);
+            *entry = PageTableEntry::new_with_flags((i as u32) * PAGE_SIZE, flags)?;
         }
 
-        Self { entries }
+        Ok(Self { entries })
     }
 }
 
-pub fn load_kernel_directory() {
-    // KERNEL_PAGE_DIRECTORY.load_to_cr3();
+pub fn load_kernel_directory() -> crate::Result<()> {
     let pd_addr = KERNEL_PAGE_DIRECTORY_ADDR as *mut PageDirectory;
     let pt_addr = KERNEL_CODE_ADDR as *mut PageTable;
+
     unsafe {
-        *pd_addr = PageDirectory::new_for_kernel();
-        *pt_addr = PageTable::new_for_kernel();
+        *pd_addr = PageDirectory::new_for_kernel()?;
+        *pt_addr = PageTable::new_for_kernel()?;
         PageDirectory::load_to_cr3();
         // let a: u32;
         // asm!("mov {}, cr3", out(reg) a);
         // kprintln!("CR3 points at {:x}", a);
     }
+
+    Ok(())
 }
 
-pub fn enable_paging() {
+pub fn enable_paging() -> crate::Result<()> {
     unsafe {
         asm!("mov eax, cr0", "or eax, 0x80000000", "mov cr0, eax");
     }
+
+    Ok(())
 }

@@ -29,7 +29,8 @@ pub type Result<T> = core::result::Result<T, KernelError>;
 #[no_mangle]
 pub extern "C" fn kmain() -> ! {
     if let Err(kernel_error) = init() {
-        panic!("Fatal Error on kenrnel initialization: {:?}", kernel_error)
+        kprinterror!("{}\n", kernel_error);
+        panic!("Kernel init Error");
     }
 
     loop {
