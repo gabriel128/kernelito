@@ -1,8 +1,6 @@
 #![allow(dead_code)]
 use core::arch::asm;
 
-use lazy_static::lazy_static;
-
 mod attr {
     // If the bit is set, the page will not be cached. Otherwise, it will be.
     pub const CACHE_DISABLED: u32 = 0b0001_0000;
@@ -21,13 +19,6 @@ const PAGE_SIZE: u32 = 4096;
 const PAGE_ENTRIES_QTY: usize = 1024;
 const KERNEL_PAGE_DIRECTORY_ADDR: u32 = 0x100000;
 const KERNEL_CODE_ADDR: u32 = 0x101000;
-
-// lazy_static! {
-//     #[link_section = ".page_directory"]
-//     static ref KERNEL_PAGE_DIRECTORY: PageDirectory = PageDirectory::new_for_kernel();
-//     #[link_section = ".page_directory"]
-//     static ref KERNEL_CODE_PAGE_TABLE: PageTable = PageTable::new_for_kernel();
-// }
 
 #[repr(transparent)]
 struct PageDirectory {

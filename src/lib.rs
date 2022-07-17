@@ -13,17 +13,32 @@ extern crate std;
 mod vga;
 
 mod checks;
+mod errors;
 mod idt;
 mod io;
-mod paging;
+mod mem;
 mod pic;
 
 use core::{arch::asm, panic::PanicInfo};
 
+use errors::KernelError;
 use vga::utils::print_ok_loading_message;
+
+pub type Result<T> = core::result::Result<T, KernelError>;
 
 #[no_mangle]
 pub extern "C" fn kmain() -> ! {
+    if let Err(kernel_error) = init() {
+        panic!("Fatal Error on kenrnel initialization: {:?}", kernel_error)
+    }
+
+    loop {
+        halt()
+    }
+}
+
+#[inline(always)]
+fn init() -> Result<()> {
     welcome_msg();
 
     print_ok_loading_message("Bootlader");
@@ -37,20 +52,19 @@ pub extern "C" fn kmain() -> ! {
 
     print_ok_loading_message("PIC");
 
-    paging::load_kernel_directory();
-    paging::enable_paging();
+    mem::init()?;
+
+    print_ok_loading_message("Kernel Memory Managing");
 
     idt::enable_interrupts();
 
     print_ok_loading_message("Interrupts Enabled");
 
-    kprintln!("kernelito>");
+    kprintln!("\nkernelito>");
 
     checks::run();
 
-    loop {
-        halt()
-    }
+    Ok(())
 }
 
 fn welcome_msg() {
