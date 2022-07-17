@@ -62,10 +62,9 @@ clean:
 gdb: build
 	gdb -ex 'target remote | qemu-system-i386 -hda ./bin/kernel.img -S -gdb stdio' \
         -ex 'set architecture i386' \
-        -ex 'add-symbol-file ./symbols' \
-		-ex 'hbreak *0x100000' \
-		-ex 'continue' \
-		-ex 'layout src'
+		-ex 'continue'
+		# -ex 'layout src'
+		# -ex 'hbreak *0x100000' \
 
 test:
 	cargo +stable watch -x "test --target=i686-unknown-linux-gnu -- --color=always --nocapture --test-threads=1"

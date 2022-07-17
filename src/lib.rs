@@ -15,6 +15,7 @@ mod vga;
 mod checks;
 mod idt;
 mod io;
+mod paging;
 mod pic;
 
 use core::{arch::asm, panic::PanicInfo};
@@ -36,13 +37,16 @@ pub extern "C" fn kmain() -> ! {
 
     print_ok_loading_message("PIC");
 
-    checks::run();
+    paging::load_kernel_directory();
+    paging::enable_paging();
 
     idt::enable_interrupts();
 
     print_ok_loading_message("Interrupts Enabled");
 
     kprintln!("kernelito>");
+
+    checks::run();
 
     loop {
         halt()

@@ -56,6 +56,9 @@ mod exceptions {
 mod irq {
     use crate::pic;
 
+    #[cfg(feature = "checks-mode")]
+    use crate::io::Port8;
+
     pub extern "x86-interrupt" fn timer() {
         #[cfg(feature = "checks-mode")]
         kprint!(".");
