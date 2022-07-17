@@ -1,5 +1,9 @@
 // Full reference https://wiki.osdev.org/Exceptions
 
+#[cfg(test)]
+pub type HandlerFn = extern "C" fn();
+
+#[cfg(not(test))]
 pub type HandlerFn = extern "x86-interrupt" fn();
 
 const DIVIDE_BY_ZERO_VNO: u16 = 0;
@@ -9,7 +13,6 @@ const PAGE_FAULT_VNO: u16 = 14;
 const TIMER_IRQ_NO: u16 = 32;
 const KYBD_IRQ_NO: u16 = 33;
 
-// #[derive(Debug)]
 pub struct Handler {
     pub interrupt_num: u16,
     pub handler_fn: HandlerFn,
@@ -24,6 +27,7 @@ impl Handler {
     }
 }
 
+#[cfg(not(test))]
 pub fn all() -> [Handler; 6] {
     [
         Handler::new(DIVIDE_BY_ZERO_VNO, exceptions::divide_by_zero),
@@ -35,6 +39,12 @@ pub fn all() -> [Handler; 6] {
     ]
 }
 
+#[cfg(test)]
+pub fn all() -> [Handler; 0] {
+    []
+}
+
+#[cfg(not(test))]
 mod exceptions {
     pub extern "x86-interrupt" fn divide_by_zero() {
         panic!("Exeception! Division by zero macho");
@@ -53,6 +63,7 @@ mod exceptions {
     }
 }
 
+#[cfg(not(test))]
 mod irq {
     use crate::pic;
 
