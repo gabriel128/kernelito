@@ -14,6 +14,7 @@ pub fn run() {
     // check_interrupts();
     // check_opt_panics();
     // check_res_panics();
+    // page_fault();
 }
 
 pub fn check_vga() {
@@ -56,6 +57,14 @@ fn check_interrupts() {
 
 fn divide_by_zero() {
     unsafe { asm!("mov dx, 0; div dx") }
+}
+
+fn page_fault() {
+    let a = 0xdeadbeef as *mut u32;
+
+    unsafe {
+        *a = 11;
+    }
 }
 
 fn double_fault() {

@@ -46,6 +46,8 @@ pub fn all() -> [Handler; 0] {
 
 #[cfg(not(test))]
 mod exceptions {
+    use crate::mem;
+
     pub extern "x86-interrupt" fn divide_by_zero() {
         panic!("Exeception! Division by zero macho");
     }
@@ -59,6 +61,10 @@ mod exceptions {
     }
 
     pub extern "x86-interrupt" fn page_fault() {
+        kprinterror!(
+            "PAGE FAULT: address attempted to be used: 0x{:x}\n",
+            mem::page_faulted_addr()
+        );
         panic!("Exeception! Page fault");
     }
 }
