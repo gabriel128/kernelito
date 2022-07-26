@@ -14,6 +14,9 @@ const PIC_EOI: u8 = 0x20;
 const CMD_INIT: u8 = 0x11;
 const MODE_8086: u8 = 0x01;
 
+/// PIC interface, used to setup and control interrupts
+/// More info https://wiki.osdev.org/8259_PIC
+
 // NOTE: Mapping only the primary PIC for now
 pub fn init() {
     // Sending Init Command that is 0x11
@@ -24,6 +27,8 @@ pub fn init() {
     Port8::Pic1Data.write_byte(MODE_8086);
 }
 
+/// Common (code 0x20) issued to the PIC chips is the end of interrupt (EOI)
+/// This is issued to the PIC chips at the end of an IRQ-based interrupt routine.
 pub fn end_of_interrupt() {
     Port8::Pic1Cmd.write_byte(PIC_EOI);
 }

@@ -6,6 +6,13 @@ use core::{
 
 use core::ops::Deref;
 
+///! SpinMutex
+///!
+///! Implements a basic spinlock to be able to provide exclusive access and
+///! safe interior mutability
+///!
+///! The interface is similar to std::sync::Mutex
+
 #[derive(Debug)]
 pub struct SpinMutex<T> {
     locked: AtomicBool,
@@ -50,17 +57,31 @@ impl<T> SpinMutex<T> {
         }
     }
 
+    /// Obtains Exclusive access to the data.
+    ///
+    /// E.g.
+    ///
+    /// {
+    ///   let mutex = SpinMutex::new(0);
+    ///   *mutex.lock() += 1;
+    /// }
+    ///
+    /// Uses compare_exchange_weak in a loop given that it's faster than the strong version.
+    /// Also, it seems that x86 can't have sporious failures so the weak version should be fine
     pub fn lock(&self) -> SpinMutexGuard<T> {
         while self
             .locked
             .compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)
             .is_err()
         {
+            // Tries to make the CPU to not use as many resources given that it's
+            // spinning
             core::hint::spin_loop();
         }
         SpinMutexGuard { mutex: &self }
     }
 
+    /// Unlocks
     pub fn unlock(&self) {
         self.locked.store(false, Ordering::Release);
     }
@@ -114,25 +135,19 @@ mod test {
         for _ in 0..RUNS {
             let inner_mutex = mutex.clone();
             thread::spawn(move || {
-                std::thread::yield_now();
                 let mut a = inner_mutex.lock();
-                std::thread::yield_now();
-                *a += 1;
-                std::thread::yield_now();
-                *a -= 1;
-                std::thread::yield_now();
-                *a += 1;
-                std::thread::yield_now();
-                *a -= 1;
-                std::thread::yield_now();
-                *a += 1;
+                for _ in 0..50 {
+                    std::thread::yield_now();
+                    *a += 1;
+                    std::thread::yield_now();
+                }
             });
         }
 
         // Using sleep since there seems to be an issue with vecs including
         // JoinHandles in i686 target on x86_64 host
-        std::thread::sleep(Duration::from_secs(10));
+        std::thread::sleep(Duration::from_secs(30));
 
-        assert_eq!(*mutex.lock(), RUNS);
+        assert_eq!(*mutex.lock(), RUNS * 50);
     }
 }
