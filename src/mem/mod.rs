@@ -3,6 +3,7 @@ use core::arch::asm;
 
 mod frame_allocator;
 mod paging;
+mod sync;
 
 pub(crate) const PAGE_SIZE_BYTES: u32 = 4096;
 pub(crate) const END_OF_MEMORY: u32 = 0xFFFFFFFF;

@@ -68,3 +68,6 @@ gdb: build
 
 test:
 	cargo +stable watch -x "test --target=i686-unknown-linux-gnu -- --color=always --nocapture --test-threads=1"
+
+test-mutex:
+	cargo +stable watch -x "test sync --target=i686-unknown-linux-gnu -- --color=always --nocapture --ignored"
