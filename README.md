@@ -1,6 +1,6 @@
 # Kernelito
 
-WIP kernel (most likely will endaup as a micro kernel)
+WIP kernel (most likely will end up as a micro kernel)
 
 # Current State
 - 2 stage x86 handmade Bootloader 
