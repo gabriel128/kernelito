@@ -6,12 +6,12 @@ WIP kernel (most likely will endaup as a micro kernel)
 - 2 stage x86 handmade Bootloader 
 - 32 bits in protected mode
 - Vga driver 
+- Cool presentation screen
 - Basic IDT (mostly panics for now)
 - PIC set => Timer and Keybard IRQ set
 - Kernel locks (Basic spinlock)
 [WIP] FrameAllocator 
-[WIP] (Basics only) Identity Kernel basic Paging 
-- Cool presentation screen
+[WIP] Paging (Basics only, Identity mapped for now, Maybe recursive page directory?) 
 
 ![fornow](https://user-images.githubusercontent.com/2847315/176840794-6c7bebea-fd72-43f2-9351-afaea22e5efa.png)
 
