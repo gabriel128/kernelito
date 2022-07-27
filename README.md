@@ -21,7 +21,7 @@ WIP kernel (most likely will end up as a micro kernel)
 make debug
 ```
 
-# Memory mapping
+# Physical Memory mapping
 
 
 ----  0xFFFFFFFF (4GB)
@@ -70,3 +70,7 @@ Bios Stuff
 
 ---- 0
 
+
+# Virtual Memory mapping
+
+WIP
