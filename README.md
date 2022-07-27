@@ -6,10 +6,12 @@ WIP kernel (most likely will endaup as a micro kernel)
 - 2 stage x86 handmade Bootloader 
 - 32 bits in protected mode
 - Vga driver 
-- Basic IDT (only panics for now)
-- HW interrupts
+- Basic IDT (mostly panics for now)
+- PIC set => Timer and Keybard IRQ set
+- Kernel locks (Basic spinlock)
+[WIP] FrameAllocator 
+[WIP] (Basics only) Identity Kernel basic Paging 
 - Cool presentation screen
-
 
 ![fornow](https://user-images.githubusercontent.com/2847315/176840794-6c7bebea-fd72-43f2-9351-afaea22e5efa.png)
 
@@ -21,7 +23,8 @@ make debug
 
 # Memory mapping
 
-----  0xF4240000 (4GB)
+
+----  0xFFFFFFFF (4GB)
 
 Dynamically managed by frame allocator
 

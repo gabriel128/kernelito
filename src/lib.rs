@@ -47,15 +47,16 @@ fn init() -> Result<()> {
 
     idt::init();
 
-    print_ok_loading_message("IDT");
+    print_ok_loading_message("IDT set");
 
     pic::init();
 
-    print_ok_loading_message("PIC");
+    print_ok_loading_message("PIC loaded");
 
     mem::init()?;
 
-    print_ok_loading_message("Kernel Memory Managing");
+    print_ok_loading_message("Kernel Memory Managing initialized");
+    print_ok_loading_message("Paging Enabled");
 
     idt::enable_interrupts();
 

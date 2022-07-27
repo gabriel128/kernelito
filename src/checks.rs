@@ -1,7 +1,13 @@
 #![allow(dead_code)]
 use core::arch::asm;
 
-use crate::{kprint, kprint_color, vga::Color};
+use crate::{kprint, kprint_color, mem::sync::spin_mutex::SpinMutex, vga::Color};
+
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref TEST_MUTEX: SpinMutex<u8> = SpinMutex::new(0);
+}
 
 #[cfg(not(feature = "checks-mode"))]
 pub fn run() {}
@@ -48,6 +54,15 @@ fn check_res_panics() {
     );
     let x: Result<i32, i32> = Err(0);
     x.unwrap();
+}
+
+fn check_lock() {
+    kprint_color!(
+        Color::Green,
+        "\n============== Starting mutex checks ==============\n"
+    );
+    *TEST_MUTEX.lock() = 1;
+    kprintln!("Locked result should be 1 and it is {}", *TEST_MUTEX.lock())
 }
 
 fn check_interrupts() {
