@@ -13,17 +13,17 @@ WIP kernel (most likely will end up as a micro kernel)
 [WIP] FrameAllocator 
 [WIP] Paging (Basics only, Identity mapped for now, Maybe recursive page directory?) 
 
-![fornow](https://user-images.githubusercontent.com/2847315/176840794-6c7bebea-fd72-43f2-9351-afaea22e5efa.png)
+
+![screen](https://user-images.githubusercontent.com/2847315/181233304-8e7e9cd2-cda7-44e2-9a9a-d9fbdd001b53.png)
 
 # Debug with gdb
-
 ```
 make debug
 ```
 
 # Physical Memory mapping
 
-
+```
 ----  0xFFFFFFFF (4GB)
 
 Dynamically managed by frame allocator
@@ -69,7 +69,7 @@ Real mode Kernel stack
 Bios Stuff
 
 ---- 0
-
+```
 
 # Virtual Memory mapping
 
