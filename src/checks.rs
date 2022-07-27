@@ -1,7 +1,13 @@
 #![allow(dead_code)]
 use core::arch::asm;
 
-use crate::{kprint, kprint_color, vga::Color};
+use crate::{kprint, kprint_color, mem::sync::spin_mutex::SpinMutex, vga::Color};
+
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref TEST_MUTEX: SpinMutex<u8> = SpinMutex::new(0);
+}
 
 #[cfg(not(feature = "checks-mode"))]
 pub fn run() {}
@@ -14,6 +20,7 @@ pub fn run() {
     // check_interrupts();
     // check_opt_panics();
     // check_res_panics();
+    // page_fault();
 }
 
 pub fn check_vga() {
@@ -49,6 +56,15 @@ fn check_res_panics() {
     x.unwrap();
 }
 
+fn check_lock() {
+    kprint_color!(
+        Color::Green,
+        "\n============== Starting mutex checks ==============\n"
+    );
+    *TEST_MUTEX.lock() = 1;
+    kprintln!("Locked result should be 1 and it is {}", *TEST_MUTEX.lock())
+}
+
 fn check_interrupts() {
     double_fault();
     // divide_by_zero();
@@ -56,6 +72,14 @@ fn check_interrupts() {
 
 fn divide_by_zero() {
     unsafe { asm!("mov dx, 0; div dx") }
+}
+
+fn page_fault() {
+    let a = 0xdeadbeef as *mut u32;
+
+    unsafe {
+        *a = 11;
+    }
 }
 
 fn double_fault() {

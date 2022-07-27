@@ -1,8 +1,12 @@
 #![allow(dead_code)]
 use core::arch::asm;
 
-/// Making the Port interface safe given that we don't
-/// allow arbitrary port numbers
+///! IO Ports
+///!
+///! Used to communicate through the IO bus. More info https://wiki.osdev.org/I/O_Ports
+///!
+///! The Port interface should be safe given that we don't
+///! allow arbitrary port numbers
 
 /// Port8 represents a port that transmits 8 bits
 #[derive(Debug)]
