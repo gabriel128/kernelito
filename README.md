@@ -9,7 +9,8 @@ WIP kernel (most likely will end up as a micro kernel)
 - Cool presentation screen
 - Basic IDT (mostly panics for now)
 - PIC set => Timer and Keybard IRQ set
-- Kernel locks (Basic spinlock)
+- Kernel locks (Basic spinlock Mutex and RwLock)
+[WIP] Keybard scancodes mapping
 [WIP] FrameAllocator 
 [WIP] Paging (Basics only, Identity mapped for now, Maybe recursive page directory?) 
 

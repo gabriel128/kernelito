@@ -14,16 +14,16 @@ use core::ops::Deref;
 ///! The interface is similar to std::sync::Mutex
 
 #[derive(Debug)]
-pub struct SpinMutex<T> {
+pub struct SpinMutex<T: ?Sized> {
     locked: AtomicBool,
     data: UnsafeCell<T>,
 }
 
-pub struct SpinMutexGuard<'a, T> {
+pub struct SpinMutexGuard<'a, T: ?Sized> {
     mutex: &'a SpinMutex<T>,
 }
 
-impl<'a, T> Deref for SpinMutexGuard<'a, T> {
+impl<'a, T: ?Sized> Deref for SpinMutexGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -31,23 +31,22 @@ impl<'a, T> Deref for SpinMutexGuard<'a, T> {
     }
 }
 
-impl<'a, T> DerefMut for SpinMutexGuard<'a, T> {
+impl<'a, T: ?Sized> DerefMut for SpinMutexGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         unsafe { &mut *self.mutex.data.get() }
     }
 }
 
-impl<'a, T> Drop for SpinMutexGuard<'a, T> {
+impl<'a, T: ?Sized> Drop for SpinMutexGuard<'a, T> {
     fn drop(&mut self) {
         self.mutex.unlock();
     }
 }
 
-unsafe impl<T> Send for SpinMutex<T> {}
-unsafe impl<T> Sync for SpinMutex<T> {}
-
-unsafe impl<T> Send for SpinMutexGuard<'_, T> {}
-unsafe impl<T> Sync for SpinMutexGuard<'_, T> {}
+unsafe impl<T: ?Sized> Send for SpinMutex<T> {}
+unsafe impl<T: ?Sized> Sync for SpinMutex<T> {}
+unsafe impl<T: ?Sized> Send for SpinMutexGuard<'_, T> {}
+unsafe impl<T: ?Sized> Sync for SpinMutexGuard<'_, T> {}
 
 impl<T> SpinMutex<T> {
     pub fn new(data: T) -> Self {
@@ -56,7 +55,9 @@ impl<T> SpinMutex<T> {
             data: UnsafeCell::new(data),
         }
     }
+}
 
+impl<T: ?Sized> SpinMutex<T> {
     /// Obtains Exclusive access to the data.
     ///
     /// E.g.
@@ -93,6 +94,7 @@ mod test {
     use core::time::Duration;
     use std::thread::{self, JoinHandle};
 
+    use ntest::timeout;
     use std::sync::Arc;
 
     use super::SpinMutex;
@@ -124,6 +126,17 @@ mod test {
         *guard = 1;
 
         assert_eq!(*guard, 1);
+    }
+
+    #[test]
+    #[timeout(500)]
+    #[should_panic]
+    fn multiple_locks_deadlock() {
+        let mutex = SpinMutex::new(0);
+        mutex.lock();
+        mutex.lock();
+        // Shouldn't reach here
+        assert!(false)
     }
 
     #[test]

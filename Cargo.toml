@@ -27,7 +27,9 @@ panic = "abort"
 
 [dependencies]
 lazy_static = {version = "1.4", features= ["spin_no_std"]}
-# spin = "0.5.2"
+
+[dev-dependencies]
+ntest = "0.8"
 
 [features]
 default = []
