@@ -3,6 +3,8 @@ use core::{cell::UnsafeCell, sync::atomic::AtomicBool};
 
 use core::ops::{Deref, DerefMut};
 
+use crate::cpu;
+
 #[derive(Debug)]
 pub struct RwLock<T: ?Sized> {
     locked: AtomicBool,
@@ -67,7 +69,7 @@ impl<T> RwLock<T> {
 impl<T: ?Sized> RwLock<T> {
     pub fn read(&self) -> RwLockReadGuard<T> {
         while self.locked.load(Ordering::Relaxed) {
-            core::hint::spin_loop()
+            cpu::pause();
         }
         RwLockReadGuard { rw_lock: self }
     }
@@ -78,7 +80,7 @@ impl<T: ?Sized> RwLock<T> {
             .compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)
             .is_err()
         {
-            core::hint::spin_loop();
+            cpu::pause();
         }
         RwLockWriteGuard { rw_lock: self }
     }
@@ -92,6 +94,7 @@ impl<T: ?Sized> RwLock<T> {
 mod test {
     use super::RwLock;
     use ntest::timeout;
+    use std::sync::Arc;
 
     #[test]
     fn creates_new_rwlock() {
@@ -150,5 +153,32 @@ mod test {
         assert_eq!(*read_guard3, 0);
         assert_eq!(*read_guard2, 0);
         assert_eq!(*read_guard1, 0);
+    }
+
+    #[test]
+    fn concurrent_locking() {
+        let mutex = Arc::new(RwLock::new(0));
+        const RUNS: usize = 100000;
+
+        let mutex_b = mutex.clone();
+        let t = std::thread::spawn(move || {
+            for _ in 0..RUNS {
+                let mut a = mutex_b.write();
+                std::thread::yield_now();
+                *a += 1;
+                std::thread::yield_now();
+            }
+        });
+
+        for _ in 0..RUNS {
+            let mut a = mutex.write();
+            std::thread::yield_now();
+            *a += 1;
+            std::thread::yield_now();
+        }
+
+        t.join().unwrap();
+
+        assert_eq!(*mutex.read(), RUNS * 2);
     }
 }

@@ -6,6 +6,8 @@ use core::{
 
 use core::ops::Deref;
 
+use crate::cpu;
+
 ///! SpinMutex
 ///!
 ///! Implements a basic spinlock to be able to provide exclusive access and
@@ -45,8 +47,8 @@ impl<'a, T: ?Sized> Drop for SpinMutexGuard<'a, T> {
 
 unsafe impl<T: ?Sized> Send for SpinMutex<T> {}
 unsafe impl<T: ?Sized> Sync for SpinMutex<T> {}
-unsafe impl<T: ?Sized> Send for SpinMutexGuard<'_, T> {}
-unsafe impl<T: ?Sized> Sync for SpinMutexGuard<'_, T> {}
+// unsafe impl<T: ?Sized> Send for SpinMutexGuard<'_, T> {}
+// unsafe impl<T: ?Sized> Sync for SpinMutexGuard<'_, T> {}
 
 impl<T> SpinMutex<T> {
     pub fn new(data: T) -> Self {
@@ -77,7 +79,7 @@ impl<T: ?Sized> SpinMutex<T> {
         {
             // Tries to make the CPU to not use as many resources given that it's
             // spinning
-            core::hint::spin_loop();
+            cpu::pause();
         }
         SpinMutexGuard { mutex: &self }
     }
@@ -96,6 +98,7 @@ mod test {
 
     use ntest::timeout;
     use std::sync::Arc;
+    use std::vec::Vec;
 
     use super::SpinMutex;
 
@@ -140,27 +143,29 @@ mod test {
     }
 
     #[test]
-    #[ignore]
     fn concurrent_locking() {
         let mutex = Arc::new(SpinMutex::new(0));
-        const RUNS: usize = 1000;
+        const RUNS: usize = 100000;
+
+        let mutex_b = mutex.clone();
+        let t = thread::spawn(move || {
+            for _ in 0..RUNS {
+                let mut a = mutex_b.lock();
+                std::thread::yield_now();
+                *a += 1;
+                std::thread::yield_now();
+            }
+        });
 
         for _ in 0..RUNS {
-            let inner_mutex = mutex.clone();
-            thread::spawn(move || {
-                let mut a = inner_mutex.lock();
-                for _ in 0..50 {
-                    std::thread::yield_now();
-                    *a += 1;
-                    std::thread::yield_now();
-                }
-            });
+            let mut a = mutex.lock();
+            std::thread::yield_now();
+            *a += 1;
+            std::thread::yield_now();
         }
 
-        // Using sleep since there seems to be an issue with vecs including
-        // JoinHandles in i686 target on x86_64 host
-        std::thread::sleep(Duration::from_secs(30));
+        t.join().unwrap();
 
-        assert_eq!(*mutex.lock(), RUNS * 50);
+        assert_eq!(*mutex.lock(), RUNS * 2);
     }
 }
