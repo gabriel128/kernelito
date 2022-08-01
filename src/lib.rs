@@ -13,6 +13,7 @@ extern crate std;
 mod vga;
 
 mod checks;
+mod cpu;
 mod errors;
 mod idt;
 mod io;

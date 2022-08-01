@@ -6,6 +6,8 @@ use core::{
 
 use core::ops::Deref;
 
+use crate::cpu;
+
 ///! SpinMutex
 ///!
 ///! Implements a basic spinlock to be able to provide exclusive access and
@@ -14,16 +16,16 @@ use core::ops::Deref;
 ///! The interface is similar to std::sync::Mutex
 
 #[derive(Debug)]
-pub struct SpinMutex<T> {
+pub struct SpinMutex<T: ?Sized> {
     locked: AtomicBool,
     data: UnsafeCell<T>,
 }
 
-pub struct SpinMutexGuard<'a, T> {
+pub struct SpinMutexGuard<'a, T: ?Sized> {
     mutex: &'a SpinMutex<T>,
 }
 
-impl<'a, T> Deref for SpinMutexGuard<'a, T> {
+impl<'a, T: ?Sized> Deref for SpinMutexGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -31,23 +33,22 @@ impl<'a, T> Deref for SpinMutexGuard<'a, T> {
     }
 }
 
-impl<'a, T> DerefMut for SpinMutexGuard<'a, T> {
+impl<'a, T: ?Sized> DerefMut for SpinMutexGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         unsafe { &mut *self.mutex.data.get() }
     }
 }
 
-impl<'a, T> Drop for SpinMutexGuard<'a, T> {
+impl<'a, T: ?Sized> Drop for SpinMutexGuard<'a, T> {
     fn drop(&mut self) {
         self.mutex.unlock();
     }
 }
 
-unsafe impl<T> Send for SpinMutex<T> {}
-unsafe impl<T> Sync for SpinMutex<T> {}
-
-unsafe impl<T> Send for SpinMutexGuard<'_, T> {}
-unsafe impl<T> Sync for SpinMutexGuard<'_, T> {}
+unsafe impl<T: ?Sized> Send for SpinMutex<T> {}
+unsafe impl<T: ?Sized> Sync for SpinMutex<T> {}
+// unsafe impl<T: ?Sized> Send for SpinMutexGuard<'_, T> {}
+// unsafe impl<T: ?Sized> Sync for SpinMutexGuard<'_, T> {}
 
 impl<T> SpinMutex<T> {
     pub fn new(data: T) -> Self {
@@ -56,7 +57,9 @@ impl<T> SpinMutex<T> {
             data: UnsafeCell::new(data),
         }
     }
+}
 
+impl<T: ?Sized> SpinMutex<T> {
     /// Obtains Exclusive access to the data.
     ///
     /// E.g.
@@ -76,7 +79,7 @@ impl<T> SpinMutex<T> {
         {
             // Tries to make the CPU to not use as many resources given that it's
             // spinning
-            core::hint::spin_loop();
+            cpu::pause();
         }
         SpinMutexGuard { mutex: &self }
     }
@@ -93,7 +96,9 @@ mod test {
     use core::time::Duration;
     use std::thread::{self, JoinHandle};
 
+    use ntest::timeout;
     use std::sync::Arc;
+    use std::vec::Vec;
 
     use super::SpinMutex;
 
@@ -127,27 +132,40 @@ mod test {
     }
 
     #[test]
-    #[ignore]
+    #[timeout(500)]
+    #[should_panic]
+    fn multiple_locks_deadlock() {
+        let mutex = SpinMutex::new(0);
+        mutex.lock();
+        mutex.lock();
+        // Shouldn't reach here
+        assert!(false)
+    }
+
+    #[test]
     fn concurrent_locking() {
         let mutex = Arc::new(SpinMutex::new(0));
-        const RUNS: usize = 1000;
+        const RUNS: usize = 100000;
+
+        let mutex_b = mutex.clone();
+        let t = thread::spawn(move || {
+            for _ in 0..RUNS {
+                let mut a = mutex_b.lock();
+                std::thread::yield_now();
+                *a += 1;
+                std::thread::yield_now();
+            }
+        });
 
         for _ in 0..RUNS {
-            let inner_mutex = mutex.clone();
-            thread::spawn(move || {
-                let mut a = inner_mutex.lock();
-                for _ in 0..50 {
-                    std::thread::yield_now();
-                    *a += 1;
-                    std::thread::yield_now();
-                }
-            });
+            let mut a = mutex.lock();
+            std::thread::yield_now();
+            *a += 1;
+            std::thread::yield_now();
         }
 
-        // Using sleep since there seems to be an issue with vecs including
-        // JoinHandles in i686 target on x86_64 host
-        std::thread::sleep(Duration::from_secs(30));
+        t.join().unwrap();
 
-        assert_eq!(*mutex.lock(), RUNS * 50);
+        assert_eq!(*mutex.lock(), RUNS * 2);
     }
 }
