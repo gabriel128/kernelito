@@ -71,6 +71,7 @@ impl<T: ?Sized> RwLock<T> {
         while self.locked.load(Ordering::Relaxed) {
             cpu::pause();
         }
+        // FIX: There might be a race condition here
         RwLockReadGuard { rw_lock: self }
     }
 

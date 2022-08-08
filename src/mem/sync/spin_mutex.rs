@@ -77,8 +77,15 @@ impl<T: ?Sized> SpinMutex<T> {
             .compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)
             .is_err()
         {
-            // Tries to make the CPU to not use as many resources given that it's
-            // spinning
+            // Helps on high contention scenarios given that
+            // this a load is a cheaper instruction than compara_and_exchange.
+            // The reason being that a load would only require a shared reference
+            // in te cache while compare_and_exchange will require an exclusive one
+            while self.locked.load(Ordering::Acquire) {
+                // Tries to make the CPU to not use as many resources given that it's
+                // spinning
+                cpu::pause();
+            }
             cpu::pause();
         }
         SpinMutexGuard { mutex: &self }
