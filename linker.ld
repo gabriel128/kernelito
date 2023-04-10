@@ -9,28 +9,28 @@ SECTIONS
     }
 
     . = 0x7e00;
-    .text : ALIGN(4K)
+    .text : ALIGN(512)
     {
         *(.text)
     }
 
-    .rodata : ALIGN(4K)
+    .rodata : ALIGN(512)
     {
         *(.rodata)
     }
 
-    .data : ALIGN(4K)
+    .data : ALIGN(512)
     {
         *(.data)
     }
 
-    .bss : ALIGN(4K)
+    .bss : ALIGN(512)
     {
         *(COMMON)
         *(.bss)
     }
 
-    .asm : ALIGN(4K)
+    .asm : ALIGN(512)
     {
         *(.asm)
     }
