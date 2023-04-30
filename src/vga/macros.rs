@@ -6,7 +6,6 @@ macro_rules! kprintln {
 
         let mut vga = VgaDriver::new(Color::default());
         let _ = writeln!(&mut vga, $($arg)*);
-        // ufmt::uwrite!(&mut vga, "\n").unwrap();
     }}
 }
 

@@ -16,7 +16,7 @@ mod checks;
 mod cpu;
 mod errors;
 mod idt;
-mod io;
+mod io_ports;
 mod mem;
 mod pic;
 

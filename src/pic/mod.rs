@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::{idt, io::Port8};
+use crate::{idt, io_ports::Port8};
 
 const PIC1: u16 = 0x20;
 const PIC2: u16 = 0xA0;

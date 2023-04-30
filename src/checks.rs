@@ -76,7 +76,7 @@ fn check_locks() {
 
 fn check_interrupts() {
     // page_fault();
-    // double_fault();
+    double_fault();
     // divide_by_zero();
 }
 
