@@ -5,7 +5,7 @@ mod handlers;
 use core::arch::asm;
 use lazy_static::lazy_static;
 
-use self::handlers::{Handler, HandlerFn};
+use self::handlers::{Handler, HandlerFn, HandlerFunction};
 
 const TOTAL_INTERRUPTS: usize = 64;
 
@@ -27,6 +27,7 @@ pub fn enable_interrupts() {
     }
 }
 
+#[repr(transparent)]
 pub struct Idt([IdtDescriptor; TOTAL_INTERRUPTS]);
 
 impl Idt {
@@ -81,7 +82,7 @@ impl IdtRegister {
 #[derive(Clone, Copy)]
 #[repr(C, packed)]
 struct IdtDescriptor {
-    // offset bits 0..15
+    // interrupt handler entry address, bits 0..15
     offset_1: u16,
     // a code segment selector in GDT or LDT
     selector: u16,
@@ -106,8 +107,8 @@ impl IdtDescriptor {
     }
 
     #[inline(always)]
-    pub fn new(handler: HandlerFn) -> Self {
-        let handler_addr = handler as u32;
+    pub fn new(handler: HandlerFunction) -> Self {
+        let handler_addr: u32 = handler.into();
         let type_attributes: u8 = TypeAttrs::new(true, Dpl::Ring0, GateType::InterruptGate).into();
 
         Self {

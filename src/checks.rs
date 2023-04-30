@@ -23,10 +23,9 @@ pub fn run() {
 
     check_vga();
     check_locks();
-    // check_interrupts();
+    check_interrupts();
     // check_opt_panics();
     // check_res_panics();
-    // page_fault();
 }
 
 pub fn check_vga() {
@@ -76,7 +75,8 @@ fn check_locks() {
 }
 
 fn check_interrupts() {
-    double_fault();
+    // page_fault();
+    // double_fault();
     // divide_by_zero();
 }
 
