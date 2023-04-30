@@ -2,6 +2,8 @@
 
 #[cfg(test)]
 pub type HandlerFn = extern "C" fn();
+#[cfg(test)]
+pub type HandlerFnEx = extern "C" fn();
 
 #[cfg(not(test))]
 pub type HandlerFn = extern "x86-interrupt" fn(frame: IntStackFrame);
