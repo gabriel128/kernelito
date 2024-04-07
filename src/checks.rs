@@ -2,7 +2,6 @@
 use core::arch::asm;
 
 use crate::{
-    kprint, kprint_color,
     mem::sync::{spin_mutex::SpinMutex, spin_rw_lock::RwLock},
     vga::Color,
 };

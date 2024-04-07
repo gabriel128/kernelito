@@ -245,13 +245,14 @@ impl VgaDriver {
 }
 
 // For local dummy testing.
-// Call with b"Check this out, all this stuff is coming from rust!!!",
 pub fn test_print() {
     let vga_buffer = VGA_MEMORY_ADDR as *mut u8;
 
     unsafe {
         *vga_buffer.offset(0 as isize) = b'E';
         *vga_buffer.offset(1 as isize) = 0x4;
+        *vga_buffer.offset(2 as isize) = b'F';
+        *vga_buffer.offset(3 as isize) = 0x4;
     }
 }
 
