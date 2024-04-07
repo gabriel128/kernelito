@@ -1,6 +1,12 @@
 #![allow(dead_code)]
 
+#[cfg(not(test))]
 mod handlers;
+#[cfg(test)]
+mod test_handlers;
+
+#[cfg(test)]
+use test_handlers as handlers;
 
 use core::arch::asm;
 use lazy_static::lazy_static;

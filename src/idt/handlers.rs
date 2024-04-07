@@ -42,7 +42,6 @@ impl Handler {
     }
 }
 
-#[cfg(not(test))]
 pub fn all() -> [Handler; 6] {
     [
         Handler::new(
@@ -66,11 +65,6 @@ pub fn all() -> [Handler; 6] {
     ]
 }
 
-#[cfg(test)]
-pub fn all() -> [Handler; 0] {
-    []
-}
-
 /// Representation of 32bit interrupt stack frame
 ///
 ///  ------
@@ -89,7 +83,6 @@ pub struct IntStackFrame {
     eflags: u32,
 }
 
-#[cfg(not(test))]
 mod exceptions {
     use crate::idt::handlers::IntStackFrame;
     use crate::mem;
@@ -123,7 +116,6 @@ mod exceptions {
     }
 }
 
-#[cfg(not(test))]
 mod irq {
     use crate::pic;
 
