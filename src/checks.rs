@@ -2,7 +2,6 @@
 use core::arch::asm;
 
 use crate::{
-    kprint, kprint_color,
     mem::sync::{spin_mutex::SpinMutex, spin_rw_lock::RwLock},
     vga::Color,
 };
@@ -76,7 +75,7 @@ fn check_locks() {
 
 fn check_interrupts() {
     // page_fault();
-    // double_fault();
+    double_fault();
     // divide_by_zero();
 }
 
