@@ -35,9 +35,9 @@ SECTIONS
         *(.asm)
     }
 
-    /* /DISCARD/ : { */
-    /*     *(.comment) */
-    /*     *(.eh_frame) */
-    /*     *(.rel.eh_frame) */
-    /* } */
+    /DISCARD/ : {
+        *(.comment)
+        *(.eh_frame)
+        *(.rel.eh_frame)
+    }
 }

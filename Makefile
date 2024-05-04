@@ -12,9 +12,10 @@ build: clean
 
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img
-	dd if=/dev/zero bs=512 count=3000 >> ./bin/kernel.img
-	ls -sh ./bin/kernel.bin
-	ls -sh ./bin/kernel.img
+	dd if=/dev/zero bs=512 count=5000 >> ./bin/kernel.img
+	du -h ./target/i686/release/libkernelito.a
+	du -h ./bin/kernel.img
+	du -h ./bin/kernel.bin
 
 run-checks:
 	FEATURES="checks-mode" make
@@ -31,16 +32,17 @@ build-debug: clean
 
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img
-	dd if=/dev/zero bs=512 count=4000 >> ./bin/kernel.img
-	ls -sh ./bin/kernel.bin
-	ls -sh ./bin/kernel.img
+	dd if=/dev/zero bs=512 count=400 >> ./bin/kernel.img
+	du -h ./bin/kernel.bin
+	du -h ./bin/kernel.img
 
 debug-run: build-debug
 	make run
 
 run:
+	# qemu-system-x86_64 -s -S -no-reboot -drive format=raw,file=bin/kernel.img
 	qemu-system-x86_64 -no-reboot -drive format=raw,file=bin/kernel.img
-	# qemu-system-i386 -hda ./bin/kernel.img
+	# qemu-system-i386 -no-reboot -drive format=raw,file=bin/kernel.img
 
 # DEPRECATED
 # c-kernel: clean
@@ -67,7 +69,7 @@ gdb: build
 		# -ex 'hbreak *0x100000' \
 
 test:
-	cargo +stable watch -x "test --target=i686-unknown-linux-gnu -- --color=always --nocapture --test-threads=1"
+	cross +stable test --target=i686-unknown-linux-gnu -- --nocapture
 
 test-mutex:
 	cargo +stable watch -x "test sync --target=i686-unknown-linux-gnu -- --color=always --nocapture --ignored"

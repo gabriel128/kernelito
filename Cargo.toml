@@ -1,4 +1,3 @@
-
 [package]
 name = "kernelito"
 version = "0.1.0"
@@ -9,12 +8,15 @@ crate-type = ["staticlib"]
 
 [profile.dev]
 panic = "abort"
-opt-level = "s"
+# opt-level = 0
+# opt-level = "s"
 # overflow-checks = false
 
 [profile.release]
+lto = "fat"
 panic = "abort"
-# debug = true
+# opt-level = "z"
+# strip = true
 # debug-assertions = false
 
 ## To super optiomizing stip kernel
