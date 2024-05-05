@@ -12,5 +12,9 @@
   "panic-strategy": "abort",
   "disable-redzone": true,
   "features": "-mmx,-sse,+soft-float",
-  "relocation-model": "static"
+  "relocation-model": "static",
+  "position-independent-executables": false,
+  "no-default-libraries": true,
+  "has-rpath": false,
+  "code-model": "kernel"
 }

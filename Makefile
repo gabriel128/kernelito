@@ -5,15 +5,21 @@ all: build run
 build: clean
 	nasm -g bootloader/main.asm -f bin -o bin/boot.bin
 
+	# Build Rust
 	cargo build --release --features $(FEATURES)
-	cp target/i686/release/libkernelito.a build/libkernelito.a
-	i686-elf-ld -g -n --gc-sections -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
-	# i686-elf-ld -g -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+	# cp target/i686/release/kernelin bin/kernel.bin
 
+	cp target/i686/release/libkernelito.a build/libkernelito.a
+# i686-elf-gcc -g -n -ffreestanding -nostdlib -nostartfiles -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+	i686-elf-ld -g -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+
+	# i686-elf-ld -o ./bin/kernel.bin -Tlinker.ld ./target/i686/release/kernelito.a
+	rm -rf ./bin/kernel.img
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img
-	dd if=/dev/zero bs=512 count=5000 >> ./bin/kernel.img
-	du -h ./target/i686/release/libkernelito.a
+	dd if=/dev/zero bs=512 count=4096 >> ./bin/kernel.img
+
+	du -h ./build/libkernelito.a
 	du -h ./bin/kernel.img
 	du -h ./bin/kernel.bin
 
@@ -26,13 +32,13 @@ build-debug: clean
 
 	cargo build
 	cp target/i686/debug/libkernelito.a build/libkernelito.a
-	# ld -g --gc-sections -n -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
-	# i686-elf-ld -g -n --gc-sections -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
-	i686-elf-ld -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+# ld -g --gc-sections -n -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+# i686-elf-ld -g -n --gc-sections -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
+# i686-elf-ld -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
 
 	dd if=./bin/boot.bin >> ./bin/kernel.img
 	dd if=./bin/kernel.bin >> ./bin/kernel.img
-	dd if=/dev/zero bs=512 count=400 >> ./bin/kernel.img
+	dd if=/dev/zero bs=512 count=4000 >> ./bin/kernel.img
 	du -h ./bin/kernel.bin
 	du -h ./bin/kernel.img
 
@@ -41,8 +47,8 @@ debug-run: build-debug
 
 run:
 	# qemu-system-x86_64 -s -S -no-reboot -drive format=raw,file=bin/kernel.img
-	qemu-system-x86_64 -no-reboot -drive format=raw,file=bin/kernel.img
-	# qemu-system-i386 -no-reboot -drive format=raw,file=bin/kernel.img
+	# qemu-system-i386 -accel tcg -d int,cpu_reset -D ./log.txt -cpu core2duo -m 128 -no-reboot -drive format=raw,file=bin/kernel.img -monitor pty -smp 1 -vga etd
+	qemu-system-i386 -no-reboot -drive format=raw,file=bin/kernel.img
 
 # DEPRECATED
 # c-kernel: clean

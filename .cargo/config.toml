@@ -19,13 +19,13 @@ rustflags = [
   "-C", "link-arg=-Tlinker.ld",
   "-C", "link-arg=-melf_i386",
   "-C", "link-arg=--gc-sections",
-  "-C", "link-arg=-Wl",
-  "-C", "link-arg=-n",
-  "-C", "link-arg=-N",
+  # "-C", "link-arg=-Wl",
+  # "-C", "link-arg=-n",
+  # "-C", "link-arg=-N",
   "-C", "link-arg=-no-dynamic-linker",
   "-C", "link-arg=-no-pie",
-  "-C", "link-arg='build-id=-none'",
-  "-C", "link-arg=-nostartfiles",
+  # "-C", "link-arg='build-id=-none'",
+  # "-C", "link-arg=-nostartfiles",
 ]
 
 # [target.i686-unknown-linux-gnu]

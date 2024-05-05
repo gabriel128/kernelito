@@ -6,6 +6,10 @@ edition = "2021"
 [lib]
 crate-type = ["staticlib"]
 
+# [[bin]]
+# name = "kernelin"
+# path = "src/lib.rs"
+
 [profile.dev]
 panic = "abort"
 # opt-level = 0
@@ -13,9 +17,10 @@ panic = "abort"
 # overflow-checks = false
 
 [profile.release]
+# debug = true
 lto = "fat"
 panic = "abort"
-# opt-level = "z"
+# opt-level = 1
 # strip = true
 # debug-assertions = false
 

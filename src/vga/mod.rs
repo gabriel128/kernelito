@@ -250,9 +250,11 @@ pub fn test_print() {
 
     unsafe {
         *vga_buffer.offset(0 as isize) = b'E';
-        *vga_buffer.offset(1 as isize) = 0x4;
+        *vga_buffer.offset(1 as isize) = 0x1;
         *vga_buffer.offset(2 as isize) = b'F';
         *vga_buffer.offset(3 as isize) = 0x4;
+        *vga_buffer.offset(4 as isize) = b'F';
+        *vga_buffer.offset(5 as isize) = 0x4;
     }
 }
 
