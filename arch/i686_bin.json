@@ -8,7 +8,17 @@
   "os": "none",
   "executables": true,
   "linker-flavor": "gcc",
+  "linker": "i686-elf-gcc",
   "panic-strategy": "abort",
   "disable-redzone": true,
-  "features": "+soft-float,-sse,-mmx"
+  "features": "+soft-float,-sse,-mmx",
+  "pre-link-args": {
+          "gcc": [
+                  "-Wl,--script=linker.ld",
+                  "-ffreestanding",
+                  "-O2",
+                  "-nostdlib",
+                  "-nostartfiles"
+          ]
+  }
 }

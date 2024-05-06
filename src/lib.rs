@@ -43,7 +43,7 @@ pub extern "C" fn kmain() -> ! {
 fn init() -> Result<()> {
     welcome_msg();
 
-    print_ok_loading_message("Bootlader");
+    print_ok_loading_message("Bootloader Finished");
     print_ok_loading_message("VGA Driver");
 
     idt::init();
@@ -54,7 +54,7 @@ fn init() -> Result<()> {
 
     print_ok_loading_message("PIC loaded");
 
-    mem::init()?;
+    mem::init().unwrap();
 
     print_ok_loading_message("Kernel Memory Managing initialized");
     print_ok_loading_message("Paging Enabled");
@@ -66,7 +66,6 @@ fn init() -> Result<()> {
     kprintln!("\nkernelito>");
 
     checks::run();
-
     Ok(())
 }
 
