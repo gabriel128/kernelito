@@ -79,11 +79,14 @@ _start:
 
     ; Enter the high-level kernel. The ABI requires the stack is 16-byte
     ; aligned at the time of the call instruction (which afterwards pushes
-    ; the return pointer of size 4 bytes). The stack was originally 16-byte
-    ; aligned above and we've since pushed a multiple of 16 bytes to the
-    ; stack since (pushed 0 bytes so far) and the alignment is thus
-    ; preserved and the call is well defined.
-        ; note, that if you are building on Windows, C functions may have "_" prefix in assembly: _kernel_main
+    ; the return pointer of size 4 bytes).
+
+    ;; ensure stack is aligned 16-byte
+    and esp,0xFFFFFFF0
+    push 0
+    push 0
+    push ebx
+    push 42
     extern kmain
     call kmain
     ; If the system has nothing more to do, put the computer into an
