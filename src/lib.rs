@@ -18,6 +18,10 @@ mod cpu;
 mod errors;
 mod idt;
 mod io_ports;
+
+#[macro_use]
+mod log;
+
 mod mem;
 mod multiboot;
 mod pic;
@@ -26,7 +30,6 @@ use core::{arch::asm, panic::PanicInfo};
 
 use errors::KernelError;
 use multiboot::BootInfo;
-use vga::utils::print_ok_loading_message;
 
 pub type Result<T> = core::result::Result<T, KernelError>;
 
@@ -47,28 +50,28 @@ fn init(boot_info: *const BootInfo) -> Result<()> {
     welcome_msg();
 
     unsafe {
-        kprintln!("[BootInfo] {}", (*boot_info));
+        debug!("{}", (*boot_info));
     }
 
-    print_ok_loading_message("Bootloader Finished");
-    print_ok_loading_message("VGA Driver");
+    info!("Bootloader Finished");
+    info!("VGA Driver");
 
     idt::init();
 
-    print_ok_loading_message("IDT set");
+    info!("IDT set");
 
     pic::init();
 
-    print_ok_loading_message("PIC loaded");
+    info!("PIC loaded");
 
     mem::init().unwrap();
 
-    print_ok_loading_message("Kernel Memory Managing initialized");
-    print_ok_loading_message("Paging Enabled");
+    info!("Kernel Memory Managing initialized");
+    info!("Paging Enabled");
 
     idt::enable_interrupts();
 
-    print_ok_loading_message("Interrupts Enabled");
+    info!("Interrupts Enabled");
 
     kprintln!("\nkernelito>");
 
@@ -93,7 +96,7 @@ fn panic(panic_info: &PanicInfo) -> ! {
     if let (Some(args), Some(location)) = (panic_info.message(), panic_info.location()) {
         let panic_message = args.as_str().unwrap_or("Unknown Error");
 
-        kprinterror!(
+        error!(
             "KERNEL PANIC! {} in {}:{}:{}",
             panic_message,
             location.file(),
@@ -101,7 +104,7 @@ fn panic(panic_info: &PanicInfo) -> ! {
             location.column(),
         );
     } else {
-        kprinterror!("KERNEL PANIC! Unknown ERROR");
+        error!("KERNEL PANIC! Unknown ERROR");
     }
 
     loop {

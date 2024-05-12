@@ -46,7 +46,7 @@ use core::fmt::Display;
 
 /// Partially parsed
 #[repr(C, packed)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BootInfo {
     pub flags: u32,
     pub mem_lower: u32,

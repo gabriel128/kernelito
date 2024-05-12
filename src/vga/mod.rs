@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 use core::sync::atomic::{AtomicU32, Ordering};
 
-pub mod utils;
 #[macro_use]
 pub mod macros;
 
@@ -32,6 +31,7 @@ pub enum Color {
     Red,
     Green,
     LightGreen,
+    LightBlue,
     Gray,
 }
 
@@ -50,6 +50,7 @@ impl From<&Color> for u8 {
             Color::Green => 0x2,
             Color::Gray => 0x7,
             Color::LightGreen => 0xA,
+            Color::LightBlue => 0x9,
         }
     }
 }
@@ -62,6 +63,7 @@ impl From<Color> for u8 {
             Color::Green => 0x2,
             Color::Gray => 0x7,
             Color::LightGreen => 0xA,
+            Color::LightBlue => 0x9,
         }
     }
 }
