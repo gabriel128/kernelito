@@ -3,7 +3,7 @@
 #![cfg_attr(not(test), feature(panic_info_message))]
 #![cfg_attr(test, allow(unused_imports))]
 #![cfg_attr(not(test), feature(abi_x86_interrupt))]
-#![feature(ascii_char)]
+#![cfg_attr(not(test), feature(ascii_char))]
 
 // Adding std manually so rust-analyzer don't freek out
 #[cfg(test)]

@@ -40,5 +40,6 @@ ntest = "0.8"
 
 [features]
 default = []
+log_debug = []
 checks-mode = []
 

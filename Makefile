@@ -1,21 +1,19 @@
-FEATURES ?= default
+FEATURES ?= default,log_debug
 
 all: build run
 
 build: clean
 	nasm -f elf32 -o build/boot.o mb-bootloader/boot.asm
 	cargo build --release --features $(FEATURES)
-# cp target/i686/release/kernelito bin/kernel.bin
 	i686-elf-gcc -T linker.ld -o bin/kernel.bin -ffreestanding -O2 -nostdlib build/boot.o target/i686/release/libkernelito.a -lgcc
 	du -h ./bin/kernel.bin
 
 run-checks:
-	FEATURES="checks-mode" make
+	FEATURES="checks-mode,log_debug" make
 
 build-debug: clean
 	nasm -f elf32 -o build/boot.o mb-bootloader/boot.asm
 	cargo build --features $(FEATURES)
-# cp target/i686/debug/kernelito bin/kernel.bin
 	i686-elf-gcc -T linker.ld -o bin/kernel.bin -ffreestanding -O2 -nostdlib build/boot.o target/i686/debug/libkernelito.a -lgcc
 	du -h ./bin/kernel.bin
 

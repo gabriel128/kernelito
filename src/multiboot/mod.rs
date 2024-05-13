@@ -79,6 +79,12 @@ impl Display for BootInfo {
     }
 }
 impl BootInfo {
+    #[cfg(test)]
+    pub fn boot_loader_name(&self) -> &str {
+        "test"
+    }
+
+    #[cfg(not(test))]
     pub fn boot_loader_name(&self) -> &str {
         let mut len = 0;
 

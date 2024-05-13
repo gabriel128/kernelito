@@ -12,6 +12,7 @@ macro_rules! info {
 }
 
 #[macro_export]
+#[cfg(feature = "log_debug")]
 macro_rules! debug {
     ($($arg:tt)*) => {{
         use crate::vga::Color;
@@ -22,6 +23,12 @@ macro_rules! debug {
         kprint_color!(Color::White, $($arg)*);
         kprintln!("");
     }}
+}
+
+#[macro_export]
+#[cfg(not(feature = "log_debug"))]
+macro_rules! debug {
+    ($($arg:tt)*) => {};
 }
 
 #[macro_export]
