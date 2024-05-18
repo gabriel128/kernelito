@@ -23,7 +23,7 @@ debug-run: build-debug
 run:
 # qemu-system-x86_64 -s -S -no-reboot -drive format=raw,file=bin/kernel.img
 # qemu-system-i386 -accel tcg -d int,cpu_reset -D ./log.txt -cpu core2duo -m 128 -no-reboot -kernel bin/kernel.bin -monitor pty -smp 1
-	qemu-system-i386 -no-reboot -kernel bin/kernel.bin
+	qemu-system-i386 -no-reboot -m 1024M -vga std -kernel bin/kernel.bin
 
 clean:
 	rm -rf build/*

@@ -49,9 +49,14 @@ pub extern "C" fn kmain(_dummy_arg: u32, boot_info: *const BootInfo) -> ! {
 fn init(boot_info: *const BootInfo) -> Result<()> {
     welcome_msg();
 
+    let mut biggest_memory_area = None;
+
     unsafe {
-        debug!("{}", (*boot_info));
+        debug!("{:?}", (*boot_info));
+        biggest_memory_area = (*boot_info).biggest_map_entry();
     }
+
+    debug!("Biggest memory entry {:?}", biggest_memory_area);
 
     info!("Bootloader Finished");
     info!("VGA Driver");

@@ -65,6 +65,25 @@ pub struct BootInfo {
     pub apm_table: u32,
 }
 
+#[repr(C, packed)]
+#[derive(Clone)]
+pub struct MemoryMapEntry {
+    size: u32,
+    addr: u64,
+    len: u64,
+    // Available = 1,
+    // Reserved = 2,
+    // BadRam = 3,
+    // Unkown = 4,
+    map_type: u32,
+}
+
+impl MemoryMapEntry {
+    pub fn is_available(&self) -> bool {
+        self.map_type == 1
+    }
+}
+
 impl Display for BootInfo {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let field_ptr = core::ptr::addr_of!(self.flags);
@@ -89,7 +108,7 @@ impl BootInfo {
         let mut len = 0;
 
         unsafe {
-            // Limit it to chars
+            // Limit it to 50 chars
             for i in 0..50 {
                 match (*self.boot_loader_name_addr.byte_offset(i)).as_ascii() {
                     Some(a_char) if a_char.to_char() == '\0' => break,
@@ -100,5 +119,40 @@ impl BootInfo {
             core::str::from_utf8(core::slice::from_raw_parts(self.boot_loader_name_addr, len))
                 .unwrap_or("Dunno")
         }
+    }
+
+    /// Gets the biggest map entry parsed from the boot loader
+    pub fn biggest_map_entry(&self) -> Option<MemoryMapEntry> {
+        // Check if map entries are set
+        if (self.flags >> 6 & 0x1) == 0 {
+            return None;
+        }
+
+        let mut biggest_map_entry = None;
+
+        for i in 0..(*self).mmap_length {
+            let mmap_entry = ((*self).mmap_addr + core::mem::size_of::<MemoryMapEntry>() as u32 * i)
+                as *const MemoryMapEntry;
+
+            unsafe {
+                match biggest_map_entry {
+                    None if (*mmap_entry).is_available() => {
+                        biggest_map_entry = Some((*mmap_entry).clone())
+                    }
+                    Some(map_entry)
+                        if (*mmap_entry).is_available() && (*mmap_entry).len > map_entry.len =>
+                    {
+                        biggest_map_entry = Some((*mmap_entry).clone())
+                    }
+                    _ => (),
+                }
+
+                // if (*mmap_entry).size != 0 {
+                //     debug!("{:?}", *mmap_entry);
+                // }
+            }
+        }
+
+        biggest_map_entry
     }
 }
