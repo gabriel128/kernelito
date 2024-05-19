@@ -14,7 +14,7 @@ WIP kernel (most likely will end up as a micro kernel)
 - [WIP] FrameAllocator 
 - [WIP] Paging (Basics only, Identity mapped for now, Maybe recursive page directory?) 
 
-![screen](https://user-images.githubusercontent.com/2847315/181233304-8e7e9cd2-cda7-44e2-9a9a-d9fbdd001b53.png)
+<img width="717" alt="image" src="https://github.com/gabriel128/kernelito/assets/2847315/0f101923-edcc-4e67-9aec-b3237f2a8bfc">
 
 # Debug with gdb
 ```
