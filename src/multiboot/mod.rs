@@ -66,7 +66,7 @@ pub struct BootInfo {
 }
 
 #[repr(C, packed)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct MemoryMapEntry {
     size: u32,
     addr: u64,
