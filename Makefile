@@ -1,59 +1,29 @@
-FEATURES ?= default
+FEATURES ?= default,log_debug
 
 all: build run
 
 build: clean
-	nasm -g bootloader/main.asm -f bin -o bin/boot.bin
-
+	nasm -f elf32 -o build/boot.o mb-bootloader/boot.asm
 	cargo build --release --features $(FEATURES)
-	cp target/i686/release/libkernelito.a build/libkernelito.a
-	i686-elf-ld -g -n --gc-sections -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
-	# i686-elf-ld -g -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
-
-	dd if=./bin/boot.bin >> ./bin/kernel.img
-	dd if=./bin/kernel.bin >> ./bin/kernel.img
-	dd if=/dev/zero bs=512 count=3000 >> ./bin/kernel.img
-	ls -sh ./bin/kernel.bin
-	ls -sh ./bin/kernel.img
+	i686-elf-gcc -T linker.ld -o bin/kernel.bin -ffreestanding -O2 -nostdlib build/boot.o target/i686/release/libkernelito.a -lgcc
+	du -h ./bin/kernel.bin
 
 run-checks:
-	FEATURES="checks-mode" make
-
+	FEATURES="checks-mode,log_debug" make
 
 build-debug: clean
-	nasm -g bootloader/main.asm -f bin -o bin/boot.bin
-
-	cargo build
-	cp target/i686/debug/libkernelito.a build/libkernelito.a
-	# ld -g --gc-sections -n -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
-	# i686-elf-ld -g -n --gc-sections -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
-	i686-elf-ld -m elf_i386 -o ./bin/kernel.bin -Tlinker.ld build/libkernelito.a
-
-	dd if=./bin/boot.bin >> ./bin/kernel.img
-	dd if=./bin/kernel.bin >> ./bin/kernel.img
-	dd if=/dev/zero bs=512 count=4000 >> ./bin/kernel.img
-	ls -sh ./bin/kernel.bin
-	ls -sh ./bin/kernel.img
+	nasm -f elf32 -o build/boot.o mb-bootloader/boot.asm
+	cargo build --features $(FEATURES)
+	i686-elf-gcc -T linker.ld -o bin/kernel.bin -ffreestanding -O2 -nostdlib build/boot.o target/i686/debug/libkernelito.a -lgcc
+	du -h ./bin/kernel.bin
 
 debug-run: build-debug
 	make run
 
 run:
-	qemu-system-x86_64 -no-reboot -drive format=raw,file=bin/kernel.img
-	# qemu-system-i386 -hda ./bin/kernel.img
-
-# DEPRECATED
-# c-kernel: clean
-# 	gcc -T linker.ld -ffreestanding -c ./src/c_kernel/kernel.c -o ./bin/c_kernel/kernel.o
-# 	ld -m elf_i386 -o ./bin/c_kernel/kernel.bin -Ttext 0x0100000 ./bin/c_kernel/kernel.o --oformat binary
-# 	nasm src/bootloader/boot.asm -f bin -o bin/boot.bin
-
-# 	dd if=./bin/boot.bin >> ./bin/kernel.img
-# 	dd if=./bin/c_kernel/kernel.bin >> ./bin/kernel.img
-# 	truncate --size 1M ./bin/kernel.img
-
-vb: build
-	VBoxManage convertfromraw bin/kernel.img bin/kernelito.vdi --format VDI
+# qemu-system-x86_64 -s -S -no-reboot -drive format=raw,file=bin/kernel.img
+# qemu-system-i386 -accel tcg -d int,cpu_reset -D ./log.txt -cpu core2duo -m 128 -no-reboot -kernel bin/kernel.bin -monitor pty -smp 1
+	qemu-system-i386 -no-reboot -m 1024M -vga std -kernel bin/kernel.bin
 
 clean:
 	rm -rf build/*
@@ -65,9 +35,9 @@ gdb: build
 		-ex 'continue'
 		# -ex 'layout src'
 		# -ex 'hbreak *0x100000' \
-
+		#
 test:
-	cargo +stable watch -x "test --target=i686-unknown-linux-gnu -- --color=always --nocapture --test-threads=1"
+	cross +stable test --target=i686-unknown-linux-gnu -- --nocapture
 
 test-mutex:
 	cargo +stable watch -x "test sync --target=i686-unknown-linux-gnu -- --color=always --nocapture --ignored"

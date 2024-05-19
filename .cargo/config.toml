@@ -14,10 +14,23 @@ rustflags = [
   # See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
 
   # "-C", "link-arg=--nmagic",
-  "-C", "relocation-model=static",
+  # "-C", "relocation-model=static",
+  # "-C", "target-cpu=i686",
   # "-C", "link-arg=-Tlinker.ld",
   # "-C", "link-arg=-melf_i386",
   # "-C", "link-arg=--gc-sections",
   # "-C", "link-arg=-Wl",
+  # "-C", "link-arg=-n",
+  # "-C", "link-arg=-N",
+  # "-C", "link-arg=-no-dynamic-linker",
+  # "-C", "link-arg=-no-pie",
+  # "-C", "link-arg='build-id=-none'",
   # "-C", "link-arg=-nostartfiles",
 ]
+
+# [target.i686-unknown-linux-gnu]
+# linker = "/opt/homebrew/opt/llvm/bin/clang"
+# rustflags = ["-C", "link-args=-target i686-unknown-linux-gnu --sysroot=/path/to/sysroots/linux-gnu -fuse-ld=lld", "-C", "target-feature=-crt-static"]
+
+# [target.i686-unknown-linux-gnu]
+# linker = "/usr/local/bin/i686-elf-ld"

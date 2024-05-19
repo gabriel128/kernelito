@@ -3,6 +3,7 @@
 #![cfg_attr(not(test), feature(panic_info_message))]
 #![cfg_attr(test, allow(unused_imports))]
 #![cfg_attr(not(test), feature(abi_x86_interrupt))]
+#![cfg_attr(not(test), feature(ascii_char))]
 
 // Adding std manually so rust-analyzer don't freek out
 #[cfg(test)]
@@ -17,19 +18,24 @@ mod cpu;
 mod errors;
 mod idt;
 mod io_ports;
+
+#[macro_use]
+mod log;
+
 mod mem;
+mod multiboot;
 mod pic;
 
 use core::{arch::asm, panic::PanicInfo};
 
 use errors::KernelError;
-use vga::utils::print_ok_loading_message;
+use multiboot::BootInfo;
 
 pub type Result<T> = core::result::Result<T, KernelError>;
 
 #[no_mangle]
-pub extern "C" fn kmain() -> ! {
-    if let Err(kernel_error) = init() {
+pub extern "C" fn kmain(_dummy_arg: u32, boot_info: *const BootInfo) -> ! {
+    if let Err(kernel_error) = init(boot_info) {
         kprinterror!("{}\n", kernel_error);
         panic!("Kernel init Error");
     }
@@ -40,33 +46,41 @@ pub extern "C" fn kmain() -> ! {
 }
 
 #[inline(always)]
-fn init() -> Result<()> {
+fn init(boot_info: *const BootInfo) -> Result<()> {
     welcome_msg();
 
-    print_ok_loading_message("Bootlader");
-    print_ok_loading_message("VGA Driver");
+    let mut biggest_memory_area = None;
+
+    unsafe {
+        debug!("{:?}", (*boot_info));
+        biggest_memory_area = (*boot_info).biggest_map_entry();
+    }
+
+    debug!("Biggest memory entry {:?}", biggest_memory_area);
+
+    info!("Bootloader Finished");
+    info!("VGA Driver");
 
     idt::init();
 
-    print_ok_loading_message("IDT set");
+    info!("IDT set");
 
     pic::init();
 
-    print_ok_loading_message("PIC loaded");
+    info!("PIC loaded");
 
-    mem::init()?;
+    mem::init().unwrap();
 
-    print_ok_loading_message("Kernel Memory Managing initialized");
-    print_ok_loading_message("Paging Enabled");
+    info!("Kernel Memory Managing initialized");
+    info!("Paging Enabled");
 
     idt::enable_interrupts();
 
-    print_ok_loading_message("Interrupts Enabled");
+    info!("Interrupts Enabled");
 
     kprintln!("\nkernelito>");
 
     checks::run();
-
     Ok(())
 }
 
@@ -87,7 +101,7 @@ fn panic(panic_info: &PanicInfo) -> ! {
     if let (Some(args), Some(location)) = (panic_info.message(), panic_info.location()) {
         let panic_message = args.as_str().unwrap_or("Unknown Error");
 
-        kprinterror!(
+        error!(
             "KERNEL PANIC! {} in {}:{}:{}",
             panic_message,
             location.file(),
@@ -95,7 +109,7 @@ fn panic(panic_info: &PanicInfo) -> ! {
             location.column(),
         );
     } else {
-        kprinterror!("KERNEL PANIC! Unknown ERROR");
+        error!("KERNEL PANIC! Unknown ERROR");
     }
 
     loop {

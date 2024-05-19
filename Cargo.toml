@@ -1,4 +1,3 @@
-
 [package]
 name = "kernelito"
 version = "0.1.0"
@@ -7,14 +6,22 @@ edition = "2021"
 [lib]
 crate-type = ["staticlib"]
 
+# [[bin]]
+# name = "kernelin"
+# path = "src/lib.rs"
+
 [profile.dev]
 panic = "abort"
-opt-level = "s"
+# opt-level = 0
+# opt-level = "s"
 # overflow-checks = false
 
 [profile.release]
 panic = "abort"
 # debug = true
+# lto = "fat"
+# opt-level = 1
+# strip = true
 # debug-assertions = false
 
 ## To super optiomizing stip kernel
@@ -33,5 +40,6 @@ ntest = "0.8"
 
 [features]
 default = []
+log_debug = []
 checks-mode = []
 
