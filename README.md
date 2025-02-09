@@ -3,7 +3,7 @@
 WIP kernel (most likely will end up as a micro kernel)
 
 # Current State
-- ~2 stage x86 handmade Bootloader~ Fuck that, using grub's multiboot now
+- ~2 stage x86 handmade Bootloader~ Even tho it mostly works, using grub's multiboot now.
 - 32 bits in protected mode
 - Vga driver 
 - Cool presentation screen
